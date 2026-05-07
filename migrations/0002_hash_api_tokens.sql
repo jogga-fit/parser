@@ -10,16 +10,11 @@
 -- Existing rows are set to NULL (forces re-auth) because we cannot compute the
 -- correct hash without the original random bytes.
 
-UPDATE local_accounts SET api_token = NULL;
+-- api_token is NOT NULL + UNIQUE. We can't set it to NULL.
+-- Set a per-row placeholder that cannot match any SHA-256 hex digest (which is
+-- always exactly 64 lowercase hex characters). This invalidates existing sessions
+-- without violating constraints — users must re-authenticate after this migration.
+UPDATE local_accounts SET api_token = 'invalidated-' || CAST(rowid AS TEXT);
 
--- Drop the uniqueness constraint so NULL values don't conflict, then recreate
--- the constraint for non-NULL values.  SQLite does not support ALTER COLUMN,
--- so we use a table-recreation approach.
---
--- NOTE: SQLite treats each NULL as distinct for UNIQUE purposes, so the UPDATE
--- above is safe and a schema change is not strictly required.  We still mark
--- the intent clearly here for future readers.
---
--- The application layer (Rust code) ensures api_token is always set to the
--- SHA-256 hex digest of the raw token immediately on creation / rotation.
--- No further schema changes are needed.
+-- The application layer (Rust) now stores SHA-256(raw_token) in this column
+-- and hashes the incoming token before every lookup. No schema change required.
