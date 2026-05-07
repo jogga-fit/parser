@@ -17,16 +17,97 @@ use crate::server::{
 
 use super::helpers::{actor_inbox_url, fetch_local_actor};
 
-/// Resolve `@user@domain` or plain URL to an AP URL.
-pub async fn resolve_handle(state: &AppState, handle: &str) -> Result<String, AppError> {
-    let _ = state;
-    // Trim leading @.
-    let h = handle.trim_start_matches('@');
-    // @user@domain → https://domain/users/user (naive fallback)
-    if let Some((user, domain)) = h.split_once('@') {
-        return Ok(format!("https://{domain}/users/{user}"));
+/// Returns `true` for RFC-1918, loopback, link-local, CGNAT, and well-known
+/// internal hostnames. Used to prevent SSRF via WebFinger lookups.
+fn is_private_host(host: &str) -> bool {
+    use std::net::IpAddr;
+    if let Ok(ip) = host.parse::<IpAddr>() {
+        return ip.is_loopback()
+            || ip.is_unspecified()
+            || match ip {
+                IpAddr::V4(v4) => {
+                    v4.is_private()       // 10/8, 172.16/12, 192.168/16
+                    || v4.is_link_local() // 169.254/16
+                    // 100.64/10 — CGNAT shared address space
+                    || (v4.octets()[0] == 100 && (v4.octets()[1] & 0xC0) == 64)
+                }
+                IpAddr::V6(v6) => v6.is_loopback() || v6.is_unspecified(),
+            };
     }
-    Err(AppError::BadRequest("invalid handle format".into()))
+    let lower = host.to_ascii_lowercase();
+    lower == "localhost"
+        || lower.ends_with(".local")
+        || lower.ends_with(".internal")
+        || lower.ends_with(".localhost")
+}
+
+/// Resolve `@user@domain` or plain URL to an AP URL via WebFinger.
+///
+/// If `handle` is already an `http`/`https` URL it is returned unchanged.
+/// Otherwise the handle is parsed as `[@]user@domain`, a WebFinger lookup is
+/// performed against the remote domain, and the `self` link's `href` is
+/// returned as the ActivityPub actor URL.
+pub async fn resolve_handle(state: &AppState, handle: &str) -> Result<String, AppError> {
+    // If it's already a URL, return as-is.
+    if handle.starts_with("http://") || handle.starts_with("https://") {
+        return Ok(handle.to_owned());
+    }
+
+    // Strip optional leading '@'.
+    let h = handle.trim_start_matches('@');
+
+    let (user, domain) = h
+        .split_once('@')
+        .ok_or_else(|| AppError::BadRequest("invalid handle format — expected user@domain".into()))?;
+
+    // SSRF protection (C15): block RFC-1918 / loopback / internal hostnames.
+    if is_private_host(domain) {
+        return Err(AppError::BadRequest(format!(
+            "domain {domain} is not allowed"
+        )));
+    }
+
+    // Build the WebFinger resource URL.
+    let webfinger_url = format!(
+        "https://{domain}/.well-known/webfinger?resource=acct:{user}@{domain}"
+    );
+
+    let resp = state
+        .http
+        .get(&webfinger_url)
+        .header("Accept", "application/jrd+json, application/json")
+        .send()
+        .await
+        .map_err(|e| AppError::BadRequest(format!("WebFinger request failed: {e}")))?;
+
+    if !resp.status().is_success() {
+        return Err(AppError::BadRequest(format!(
+            "WebFinger returned HTTP {}",
+            resp.status()
+        )));
+    }
+
+    let body: serde_json::Value = resp
+        .json()
+        .await
+        .map_err(|e| AppError::BadRequest(format!("WebFinger response parse error: {e}")))?;
+
+    // Find the `self` link with type `application/activity+json`.
+    let href = body["links"]
+        .as_array()
+        .and_then(|links| {
+            links.iter().find(|l| {
+                l["rel"] == "self"
+                    && (l["type"] == "application/activity+json"
+                        || l["type"] == "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+            })
+        })
+        .and_then(|l| l["href"].as_str())
+        .ok_or_else(|| {
+            AppError::BadRequest("WebFinger response contains no ActivityPub self link".into())
+        })?;
+
+    Ok(href.to_owned())
 }
 
 /// Send a Follow activity and record the pending following.
