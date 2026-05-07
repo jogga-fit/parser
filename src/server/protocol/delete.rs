@@ -47,6 +47,13 @@ impl Activity for Delete {
     }
 
     async fn verify(&self, _data: &Data<AppState>) -> Result<(), AppError> {
+        let actor_host = self.actor.host_str().ok_or(AppError::BadRequest("invalid actor URL".into()))?;
+        let object_host = self.object.url().host_str().ok_or(AppError::BadRequest("invalid object URL".into()))?;
+        if actor_host != object_host {
+            return Err(AppError::BadRequest(format!(
+                "actor domain {actor_host} cannot delete object from {object_host}"
+            )));
+        }
         Ok(())
     }
 

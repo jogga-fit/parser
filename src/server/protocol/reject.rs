@@ -46,6 +46,11 @@ impl Activity for Reject {
     }
 
     async fn verify(&self, _data: &Data<AppState>) -> Result<(), AppError> {
+        if self.actor.inner() != self.object.object.inner() {
+            return Err(AppError::BadRequest(
+                "Reject actor must be the followed party".into()
+            ));
+        }
         Ok(())
     }
 

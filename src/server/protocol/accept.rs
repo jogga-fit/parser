@@ -45,6 +45,12 @@ impl Activity for Accept {
     }
 
     async fn verify(&self, _data: &Data<AppState>) -> Result<(), AppError> {
+        // The Accept must come from the actor who was followed, not a third party.
+        if self.actor.inner() != self.object.object.inner() {
+            return Err(AppError::BadRequest(
+                "Accept actor must be the followed party".into()
+            ));
+        }
         Ok(())
     }
 

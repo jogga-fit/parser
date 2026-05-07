@@ -46,6 +46,13 @@ impl Activity for Create {
     }
 
     async fn verify(&self, _data: &Data<AppState>) -> Result<(), AppError> {
+        let actor_host = self.actor.inner().host_str().ok_or(AppError::BadRequest("invalid actor URL".into()))?;
+        let note_host = self.object.id.inner().host_str().ok_or(AppError::BadRequest("invalid note URL".into()))?;
+        if actor_host != note_host {
+            return Err(AppError::BadRequest(format!(
+                "actor domain {actor_host} cannot create object attributed to {note_host}"
+            )));
+        }
         Ok(())
     }
 
@@ -71,7 +78,10 @@ impl Activity for Create {
             ap_json: serde_json::to_value(note).unwrap_or(serde_json::Value::Null),
             visibility: vis,
         };
-        let _ = ObjectQueries::insert(&data.db, &new_obj).await;
+        if let Err(e) = ObjectQueries::insert(&data.db, &new_obj).await {
+            warn!(err=%e, note_id=note_ap_id, "Create::receive: failed to insert object — skipping");
+            return Ok(());
+        }
 
         let activity_json = serde_json::to_value(&self).unwrap_or(serde_json::Value::Null);
         let activity_ap_id = self.id.as_str();
@@ -102,7 +112,9 @@ impl Activity for Create {
             .unwrap_or_default();
         let follower_count = local_followers.len();
         for follower_id in local_followers {
-            let _ = ActivityQueries::add_to_inbox(&data.db, follower_id, activity.id).await;
+            if let Err(e) = ActivityQueries::add_to_inbox(&data.db, follower_id, activity.id).await {
+                warn!(err=%e, follower_id=%follower_id, "Create::receive: inbox fan-out failed for follower");
+            }
         }
 
         debug!(
