@@ -1,0 +1,80 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT la.id        AS \"id: Uuid\",\n                      la.actor_id  AS \"actor_id: Uuid\",\n                      la.password_hash, la.api_token,\n                      la.email, la.phone,\n                      la.email_verified AS \"email_verified: bool\",\n                      la.phone_verified AS \"phone_verified: bool\",\n                      la.public_profile AS \"public_profile: bool\",\n                      la.theme,\n                      la.created_at AS \"created_at: chrono::DateTime<chrono::Utc>\"\n               FROM local_accounts la\n               JOIN actors a ON a.id = la.actor_id\n               WHERE (a.username = ?1 AND a.is_local = 1)\n                  OR (la.email    = ?1 AND la.email_verified = 1)\n                  OR (la.phone    = ?1 AND la.phone_verified = 1)\n               LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "password_hash",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "api_token",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "email",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "phone",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "email_verified: bool",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "phone_verified: bool",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "public_profile: bool",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "theme",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 10,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d591a57c33d55d27c56a0f2a217260cb587de753689a0333bc54f1c70dc1d78f"
+}

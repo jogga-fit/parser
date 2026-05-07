@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE following SET accepted = 1 WHERE actor_id = ? AND target_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "04db85fbbf0248bb3c02d3df09824c087f5b066f7934aeae99857e93a2ee7640"
+}

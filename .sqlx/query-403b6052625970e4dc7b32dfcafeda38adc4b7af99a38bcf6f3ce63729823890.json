@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT ap_id, attributed_to, visibility FROM objects WHERE ap_id LIKE ? AND object_type = 'Note'",
+  "describe": {
+    "columns": [
+      {
+        "name": "ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "attributed_to",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "visibility",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "403b6052625970e4dc7b32dfcafeda38adc4b7af99a38bcf6f3ce63729823890"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO likes (id, actor_ap_id, object_ap_id, like_ap_id)\n               VALUES (?, ?, ?, ?)\n               ON CONFLICT (like_ap_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "f0b1369d92b21240824f051daf2fbc5b53df19f4fd11f4549c1652778b3aebea"
+}

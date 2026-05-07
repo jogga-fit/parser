@@ -1,0 +1,128 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                   o.ap_id              AS object_ap_id,\n                   o.object_type,\n                   o.content,\n                   a.published          AS \"published: DateTime<Utc>\",\n                   e.activity_type      AS exercise_type,\n                   e.duration_s         AS \"duration_s: i32\",\n                   e.distance_m,\n                   e.elevation_gain_m,\n                   e.avg_heart_rate_bpm AS \"avg_heart_rate_bpm: i32\",\n                   e.max_heart_rate_bpm AS \"max_heart_rate_bpm: i32\",\n                   e.avg_power_w,\n                   e.max_power_w,\n                   e.normalized_power_w,\n                   e.avg_cadence_rpm,\n                   e.avg_pace_s_per_km,\n                   e.device,\n                   e.title,\n                   o.visibility         AS exercise_visibility,\n                   COALESCE(e.hidden_stats, '[]') AS \"hidden_stats!: JsonVec<String>\"\n               FROM outbox_items oi\n               JOIN activities a   ON a.id   = oi.activity_id\n               JOIN objects    o   ON o.ap_id = a.object_ap_id\n               LEFT JOIN exercises e ON e.object_id = o.id\n               WHERE oi.owner_id = ?\n                 AND a.activity_type = 'Create'\n                 AND (? OR o.visibility IN ('public', 'unlisted'))\n               ORDER BY a.published DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "object_ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_type",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "content",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "published: DateTime<Utc>",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "exercise_type",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration_s: i32",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "distance_m",
+        "ordinal": 6,
+        "type_info": "Float"
+      },
+      {
+        "name": "elevation_gain_m",
+        "ordinal": 7,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_heart_rate_bpm: i32",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "max_heart_rate_bpm: i32",
+        "ordinal": 9,
+        "type_info": "Integer"
+      },
+      {
+        "name": "avg_power_w",
+        "ordinal": 10,
+        "type_info": "Float"
+      },
+      {
+        "name": "max_power_w",
+        "ordinal": 11,
+        "type_info": "Float"
+      },
+      {
+        "name": "normalized_power_w",
+        "ordinal": 12,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_cadence_rpm",
+        "ordinal": 13,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_pace_s_per_km",
+        "ordinal": 14,
+        "type_info": "Float"
+      },
+      {
+        "name": "device",
+        "ordinal": 15,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 16,
+        "type_info": "Text"
+      },
+      {
+        "name": "exercise_visibility",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "hidden_stats!: JsonVec<String>",
+        "ordinal": 18,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "4a370bef1791e8aa7c849fcf5d2d1b2b10bfe47407e8acc534462967b863ecac"
+}

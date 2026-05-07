@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT accepted AS \"accepted: bool\" FROM following WHERE actor_id = ? AND target_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "accepted: bool",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c4e193186990a2e62e619bf79df49d323665a8470a308dbb9188940a72dd7583"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM likes WHERE actor_ap_id = ? AND object_ap_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "788f011c62f3a00e86231b5a6fbc86afbd4b905c2406b1859445ebf4102c3bdd"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO exercises\n               (id, actor_id, object_id, activity_type, started_at, duration_s,\n                distance_m, elevation_gain_m, avg_pace_s_per_km, avg_heart_rate_bpm,\n                max_heart_rate_bpm, avg_cadence_rpm, avg_power_w, max_power_w,\n                normalized_power_w, title, file_type, device, gpx_url, route,\n                visibility, hidden_stats)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 22
+    },
+    "nullable": []
+  },
+  "hash": "121fe782ca1e8339b82c749fffb58b9db66e59660f96efefed9267174f06fb67"
+}

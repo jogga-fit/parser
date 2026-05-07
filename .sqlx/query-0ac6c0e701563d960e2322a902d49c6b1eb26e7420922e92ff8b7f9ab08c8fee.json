@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.ap_id, a.username, a.domain,\n                      a.is_local AS \"is_local: bool\",\n                      a.display_name, a.avatar_url,\n                      f.accepted AS \"accepted: bool\"\n               FROM following f\n               JOIN actors a ON a.id = f.target_id\n               WHERE f.actor_id = ?\n               ORDER BY f.created_at DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "domain",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_local: bool",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "accepted: bool",
+        "ordinal": 6,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "0ac6c0e701563d960e2322a902d49c6b1eb26e7420922e92ff8b7f9ab08c8fee"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM local_accounts WHERE actor_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "e702e7baab65cd12e3672dc8d9d2877f3f87c4c1786143c4acd580913efb7e34"
+}

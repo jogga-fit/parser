@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT follow_ap_id FROM followers WHERE actor_id = ? AND follower_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "follow_ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "89078ba24c200dc70af8690dcd66a0eb7188fd3967698f30a4af671e72566fa3"
+}

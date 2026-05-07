@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT actor_ap_id, object_ap_id, announce_ap_id\n                   FROM announces\n                   WHERE actor_ap_id = ?\n                   ORDER BY created_at DESC\n                   LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "actor_ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_ap_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "announce_ap_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ad8a9785b876573fbe5513f373ed6e102e7915f4335200812dbf3a536e194d21"
+}

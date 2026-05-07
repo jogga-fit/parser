@@ -1,0 +1,132 @@
+# ============================================================
+# jogga — example configuration file
+# ============================================================
+# Pass this file to the server with: --config <FILE>
+# Any value here can also be set (or overridden) with an
+# environment variable using the pattern:
+#   JOGGA__<SECTION>__<KEY>=value
+# e.g. JOGGA__DATABASE__URL="postgres://..."
+# ============================================================
+
+
+# ------------------------------------------------------------
+# [server] — HTTP listener
+# ------------------------------------------------------------
+[server]
+
+# Interface to bind to.
+host = "0.0.0.0"
+
+# Port to listen on.
+port = 80
+
+
+# ------------------------------------------------------------
+# [database] — PostgreSQL connection
+# ------------------------------------------------------------
+[database]
+
+# (required) SQLite connection string.
+# Use a file path for persistent storage, or :memory: for an in-memory DB.
+url = "sqlite:./jogga.db"
+
+# Maximum number of connections in the pool.
+max_connections = 5
+
+
+# ------------------------------------------------------------
+# [instance] — ActivityPub identity
+# ------------------------------------------------------------
+[instance]
+
+# (required) Public domain name of this instance.
+# Must be reachable from the internet for federation to work.
+# In debug builds, "localhost:<port>" is also accepted.
+domain = "jogga.fit"
+
+# Human-readable name shown to remote servers.
+name = "jogga"
+
+# Short description of this instance.
+description = "An ActivityPub server for athletes"
+
+
+# ------------------------------------------------------------
+# [owner] — Single-owner settings
+# ------------------------------------------------------------
+[owner]
+
+# (required) Email address or E.164 phone number used to
+# deliver one-time passwords for password reset.
+# e.g. "alice@example.com" or "+15550001234"
+contact = "you@example.com"
+
+# Username of the owner actor on this instance.
+username = "owner"
+
+
+# ------------------------------------------------------------
+# [email] — SMTP delivery for OTPs  (optional section)
+# ------------------------------------------------------------
+# Remove or comment out this entire section if you do not
+# want email OTP delivery.  At least one of [email] or [sms]
+# should be present when owner.contact is set, otherwise
+# password-reset codes cannot be delivered.
+[email]
+
+# (required inside this section) SMTP server hostname.
+smtp_host = "smtp.example.com"
+
+# SMTP port.  Use 587 for STARTTLS, 465 for TLS, 25 for plain.
+smtp_port = 587
+
+# SMTP login credentials (leave empty for unauthenticated relay).
+smtp_username = "smtp-user@example.com"
+smtp_password = "super-secret-smtp-password"
+
+# Envelope "From" address for outgoing OTP emails.
+from_address = "noreply@example.com"
+
+
+# ------------------------------------------------------------
+# [sms] — Twilio delivery for OTPs  (optional section)
+# ------------------------------------------------------------
+# Remove or comment out this entire section if you do not
+# want SMS OTP delivery.  You only need one of [email] / [sms].
+# [sms]
+
+# (required inside this section) Twilio Account SID.
+# account_sid = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Twilio Auth Token.
+# auth_token = "your_twilio_auth_token"
+
+# Twilio phone number in E.164 format to send SMS from.
+# from_number = "+15550009999"
+
+
+# ------------------------------------------------------------
+# [storage] — S3-compatible object storage  (optional section)
+# ------------------------------------------------------------
+# Remove or comment out this entire section to disable file
+# uploads entirely.
+# [storage]
+
+# Custom S3-compatible endpoint URL (e.g. MinIO, Cloudflare R2).
+# Omit to use AWS S3 with the standard endpoint for the region.
+# endpoint = "https://s3.us-east-1.amazonaws.com"
+
+# (required inside this section) Public base URL from which
+# stored objects are served to clients.
+# public_url = "https://cdn.example.com"
+
+# (required inside this section) Bucket name.
+# bucket = "jogga-media"
+
+# AWS / provider region.
+# region = "us-east-1"
+
+# Access credentials.  If running on EC2/ECS with an IAM role
+# these can be omitted and the SDK will pick them up automatically.
+# access_key_id     = "AKIAIOSFODNN7EXAMPLE"
+# secret_access_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"

@@ -1,0 +1,25 @@
+pub mod account;
+pub mod activity;
+pub mod actor;
+pub mod announce;
+pub mod delivery;
+pub mod exercise;
+pub mod follow;
+pub mod like;
+pub mod media_attachment;
+pub mod notification;
+pub mod object;
+pub mod otp;
+
+pub use account::AccountQueries;
+pub use activity::ActivityQueries;
+pub use actor::ActorQueries;
+pub use announce::AnnounceQueries;
+pub use delivery::DeliveryQueries;
+pub use exercise::ExerciseQueries;
+pub use follow::FollowQueries;
+pub use like::LikeQueries;
+pub use media_attachment::MediaAttachmentQueries;
+pub use notification::NotificationQueries;
+pub use object::ObjectQueries;
+pub use otp::OtpQueries;

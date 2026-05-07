@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE outbox_deliveries SET status = 'permanent_fail', last_error = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "7e638e611f13a453732a7abbaffa2e24cf36c16445ec7737fa3d5f730c04507e"
+}

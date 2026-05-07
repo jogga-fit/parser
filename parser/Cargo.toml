@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-chrono    = { version = "0.4", features = ["serde"] }
-gpx       = "0.10"
+chrono    = { workspace = true }
+serde     = { workspace = true }
+thiserror = { workspace = true }
+
+# Parser specific dependencies
 fitparser = "0.6"
-serde     = { version = "1", features = ["derive"] }
-thiserror = "2"
+gpx       = "0.10"

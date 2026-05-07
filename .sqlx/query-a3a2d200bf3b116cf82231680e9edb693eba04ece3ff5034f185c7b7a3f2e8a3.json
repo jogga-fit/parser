@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT la.actor_id AS \"actor_id: Uuid\"\n               FROM following f\n               JOIN actors target ON target.id = f.target_id\n               JOIN local_accounts la ON la.actor_id = f.actor_id\n               WHERE target.ap_id = ? AND f.accepted = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a3a2d200bf3b116cf82231680e9edb693eba04ece3ff5034f185c7b7a3f2e8a3"
+}

@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id         AS \"id: Uuid\",\n                      actor_id   AS \"actor_id: Uuid\",\n                      visibility,\n                      route      AS \"route: JsonValue\"\n               FROM exercises WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "visibility",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "route: JsonValue",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "09d5d06c6282cbed01a42913655ff245d2897187cc3d6c0e32904d0151f6992e"
+}

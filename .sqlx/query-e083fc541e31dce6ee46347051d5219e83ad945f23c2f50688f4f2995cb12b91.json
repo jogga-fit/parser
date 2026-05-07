@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT COALESCE(a.shared_inbox_url, a.inbox_url) AS \"url!: String\"\n               FROM followers f\n               JOIN actors a ON a.id = f.follower_id\n               WHERE f.actor_id = ? AND f.accepted = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "url!: String",
+        "ordinal": 0,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e083fc541e31dce6ee46347051d5219e83ad945f23c2f50688f4f2995cb12b91"
+}

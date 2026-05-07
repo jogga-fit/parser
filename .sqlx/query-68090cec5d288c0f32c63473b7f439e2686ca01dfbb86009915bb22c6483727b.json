@@ -1,0 +1,80 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id        AS \"id: Uuid\",\n                      actor_id  AS \"actor_id: Uuid\",\n                      password_hash, api_token,\n                      email, phone,\n                      email_verified AS \"email_verified: bool\",\n                      phone_verified AS \"phone_verified: bool\",\n                      public_profile AS \"public_profile: bool\",\n                      theme,\n                      created_at AS \"created_at: chrono::DateTime<chrono::Utc>\"\n               FROM local_accounts\n               WHERE phone = ? AND phone_verified = 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "password_hash",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "api_token",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "email",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "phone",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "email_verified: bool",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "phone_verified: bool",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "public_profile: bool",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "theme",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 10,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "68090cec5d288c0f32c63473b7f439e2686ca01dfbb86009915bb22c6483727b"
+}

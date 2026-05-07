@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id        AS \"id: Uuid\",\n                      contact, contact_type, purpose, username, code_hash,\n                      expires_at AS \"expires_at: DateTime<Utc>\",\n                      used_at    AS \"used_at: DateTime<Utc>\",\n                      created_at AS \"created_at: DateTime<Utc>\"\n               FROM otp_requests\n               WHERE id = ?\n                 AND used_at IS NULL\n                 AND expires_at > strftime('%Y-%m-%dT%H:%M:%fZ','now')",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "contact",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "contact_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "purpose",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "code_hash",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "expires_at: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "used_at: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "b1ae668e5c1303774f1ca0f600bcde505fb2d8b3aa0849a1e0e4d569dd8bc83c"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO announces (id, actor_ap_id, object_ap_id, announce_ap_id)\n               VALUES (?, ?, ?, ?)\n               ON CONFLICT (announce_ap_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "bd04273dbfdd8fde318916eacdd91fccbbaf0a0147657f6c22291348843c0da4"
+}

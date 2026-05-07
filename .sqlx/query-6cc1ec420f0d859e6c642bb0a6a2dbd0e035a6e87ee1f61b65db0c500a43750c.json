@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO outbox_items (id, owner_id, activity_id)\n               VALUES (?, ?, ?)\n               ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "6cc1ec420f0d859e6c642bb0a6a2dbd0e035a6e87ee1f61b65db0c500a43750c"
+}

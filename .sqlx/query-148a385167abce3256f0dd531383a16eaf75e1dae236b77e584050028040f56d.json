@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE outbox_deliveries\n               SET attempt_count   = attempt_count + 1,\n                   last_attempt_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'),\n                   status          = 'failed'\n               WHERE id IN (\n                   SELECT id FROM outbox_deliveries\n                   WHERE  status IN ('pending', 'failed')\n                     AND  next_retry_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')\n                   ORDER BY next_retry_at\n                   LIMIT ?\n               )\n               RETURNING id              AS \"id: Uuid\",\n                         activity_id     AS \"activity_id: Uuid\",\n                         inbox_url, status,\n                         attempt_count   AS \"attempt_count: i32\",\n                         last_attempt_at AS \"last_attempt_at: DateTime<Utc>\",\n                         last_error,\n                         next_retry_at   AS \"next_retry_at: DateTime<Utc>\",\n                         created_at      AS \"created_at: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "activity_id: Uuid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "inbox_url",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "status",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "attempt_count: i32",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_attempt_at: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_error",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "next_retry_at: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "148a385167abce3256f0dd531383a16eaf75e1dae236b77e584050028040f56d"
+}

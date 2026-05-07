@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM followers WHERE actor_id = ? AND follower_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "a84e7e92cdbc0ab1b1180468b6cf718d8868f2f74dd71570bc58f28b521b0e12"
+}

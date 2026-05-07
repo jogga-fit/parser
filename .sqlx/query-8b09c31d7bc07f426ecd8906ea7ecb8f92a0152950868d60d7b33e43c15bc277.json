@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO media_attachments (id, object_ap_id, url, media_type, position)\n               VALUES (?, ?, ?, 'image/jpeg', ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "8b09c31d7bc07f426ecd8906ea7ecb8f92a0152950868d60d7b33e43c15bc277"
+}

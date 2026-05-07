@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE exercises\n               SET title = ?, hidden_stats = ?\n               WHERE object_id = (SELECT id FROM objects WHERE ap_id = ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "f5771f0f773a089ed2c59298921ee358a23e870b60af31656baf4ce302fc9383"
+}

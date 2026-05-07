@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE local_accounts SET password_hash = ?2, api_token = ?3 WHERE id = ?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "4d7ada8272a346c4a7edf13398a7c192cf137715e0974fc12e4c5383d651ecd2"
+}

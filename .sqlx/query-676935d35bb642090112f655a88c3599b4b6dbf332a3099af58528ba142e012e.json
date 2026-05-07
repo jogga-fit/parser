@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO followers (id, actor_id, follower_id, accepted, follow_ap_id)\n               VALUES (?, ?, ?, ?, ?)\n               ON CONFLICT (actor_id, follower_id) DO UPDATE SET\n                   accepted = excluded.accepted,\n                   follow_ap_id = COALESCE(excluded.follow_ap_id, followers.follow_ap_id)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "676935d35bb642090112f655a88c3599b4b6dbf332a3099af58528ba142e012e"
+}

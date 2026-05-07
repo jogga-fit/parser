@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO actors (\n               id, ap_id, username, domain, actor_type, display_name, summary,\n               public_key_pem, private_key_pem, inbox_url, outbox_url,\n               followers_url, following_url, shared_inbox_url,\n               manually_approves_followers, is_local, also_known_as, moved_to)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)\n               ON CONFLICT (ap_id) DO UPDATE SET\n                   username                    = excluded.username,\n                   domain                      = excluded.domain,\n                   actor_type                  = excluded.actor_type,\n                   display_name                = excluded.display_name,\n                   summary                     = excluded.summary,\n                   public_key_pem              = excluded.public_key_pem,\n                   inbox_url                   = excluded.inbox_url,\n                   outbox_url                  = excluded.outbox_url,\n                   followers_url               = excluded.followers_url,\n                   following_url               = excluded.following_url,\n                   shared_inbox_url            = excluded.shared_inbox_url,\n                   manually_approves_followers = excluded.manually_approves_followers,\n                   also_known_as               = excluded.also_known_as,\n                   moved_to                    = excluded.moved_to,\n                   updated_at                  = strftime('%Y-%m-%dT%H:%M:%fZ','now')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 17
+    },
+    "nullable": []
+  },
+  "hash": "fd366218f1ca072bc605bde465ec1a999de3c0daa3a107e71f95a920202727aa"
+}

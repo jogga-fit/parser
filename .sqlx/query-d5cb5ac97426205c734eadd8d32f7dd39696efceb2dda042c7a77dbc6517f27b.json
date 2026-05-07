@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE outbox_deliveries SET status = 'success' WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "d5cb5ac97426205c734eadd8d32f7dd39696efceb2dda042c7a77dbc6517f27b"
+}

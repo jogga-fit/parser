@@ -124,7 +124,11 @@ impl ParsedActivity {
                     Some((e2 - e1).max(0.0))
                 })
                 .collect();
-            if gains.is_empty() { None } else { Some(gains.iter().sum()) }
+            if gains.is_empty() {
+                None
+            } else {
+                Some(gains.iter().sum())
+            }
         };
 
         let avg_pace_s_per_km = if duration_s > 0 && distance_m > 0.0 {
@@ -137,7 +141,11 @@ impl ParsedActivity {
             .iter()
             .map(|wpt| {
                 let p = wpt.point();
-                RoutePoint { lat: p.y(), lon: p.x(), ele: wpt.elevation }
+                RoutePoint {
+                    lat: p.y(),
+                    lon: p.x(),
+                    ele: wpt.elevation,
+                }
             })
             .collect();
 
@@ -227,7 +235,8 @@ impl ParsedActivity {
             let alt = extract_f64(rec, "altitude");
 
             if let (Some(lat), Some(lon)) = (lat, lon)
-                && (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon)
+                && (-90.0..=90.0).contains(&lat)
+                && (-180.0..=180.0).contains(&lon)
             {
                 route_coords.push(RoutePoint { lat, lon, ele: alt });
             }
@@ -263,7 +272,11 @@ impl ParsedActivity {
             return Err(ParseError::NoTrackPoints);
         }
 
-        let elevation_gain_m = if has_elevation { Some(elevation_gain) } else { None };
+        let elevation_gain_m = if has_elevation {
+            Some(elevation_gain)
+        } else {
+            None
+        };
 
         // Sort by elapsed time to handle FIT files with non-chronological records.
         power_samples.sort_unstable_by_key(|s| s.0);
@@ -319,7 +332,10 @@ fn haversine_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 }
 
 fn get_field<'a>(rec: &'a FitDataRecord, name: &str) -> Option<&'a Value> {
-    rec.fields().iter().find(|f| f.name() == name).map(|f| f.value())
+    rec.fields()
+        .iter()
+        .find(|f| f.name() == name)
+        .map(|f| f.value())
 }
 
 fn extract_f64(rec: &FitDataRecord, name: &str) -> Option<f64> {
@@ -403,7 +419,11 @@ fn compute_normalized_power(samples: &[(u32, f64)]) -> Option<f64> {
     let mut grid: Vec<f64> = vec![0.0; grid_len];
     for i in 0..samples.len() {
         let start = samples[i].0 as usize;
-        let end = if i + 1 < samples.len() { samples[i + 1].0 as usize } else { grid_len };
+        let end = if i + 1 < samples.len() {
+            samples[i + 1].0 as usize
+        } else {
+            grid_len
+        };
         let power = samples[i].1;
         for cell in grid.iter_mut().take(end.min(grid_len)).skip(start) {
             *cell = power;
@@ -414,8 +434,10 @@ fn compute_normalized_power(samples: &[(u32, f64)]) -> Option<f64> {
     if grid.len() < WINDOW {
         return None;
     }
-    let rolling_avgs: Vec<f64> =
-        grid.windows(WINDOW).map(|w| w.iter().sum::<f64>() / WINDOW as f64).collect();
+    let rolling_avgs: Vec<f64> = grid
+        .windows(WINDOW)
+        .map(|w| w.iter().sum::<f64>() / WINDOW as f64)
+        .collect();
     let mean_fourth =
         rolling_avgs.iter().map(|&x| x.powi(4)).sum::<f64>() / rolling_avgs.len() as f64;
     Some(mean_fourth.powf(0.25))
@@ -574,7 +596,10 @@ mod tests {
         let mut samples: Vec<(u32, f64)> = (0u32..30).map(|s| (s, 100.0)).collect();
         samples.extend((30u32..60).map(|s| (s, 300.0)));
         let np = compute_normalized_power(&samples).unwrap();
-        assert!(np > 200.0, "NP {np} should exceed avg 200W for variable power");
+        assert!(
+            np > 200.0,
+            "NP {np} should exceed avg 200W for variable power"
+        );
     }
 
     #[test]
@@ -597,7 +622,10 @@ mod tests {
     #[test]
     fn haversine_same_point_is_zero() {
         let dist = haversine_m(51.5074, -0.1278, 51.5074, -0.1278);
-        assert!(dist.abs() < 0.001, "same-point distance should be 0, got {dist}");
+        assert!(
+            dist.abs() < 0.001,
+            "same-point distance should be 0, got {dist}"
+        );
     }
 
     #[test]

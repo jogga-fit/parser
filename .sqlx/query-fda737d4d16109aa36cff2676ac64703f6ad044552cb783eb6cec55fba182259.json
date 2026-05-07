@@ -1,0 +1,146 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id              AS \"id: Uuid\",\n                      ap_id           AS \"ap_id: ApId\",\n                      username, domain, actor_type,\n                      display_name, summary, public_key_pem, private_key_pem,\n                      inbox_url, outbox_url, followers_url, following_url,\n                      shared_inbox_url,\n                      manually_approves_followers AS \"manually_approves_followers: bool\",\n                      is_local                    AS \"is_local: bool\",\n                      is_suspended                AS \"is_suspended: bool\",\n                      avatar_url,\n                      also_known_as               AS \"also_known_as: JsonVec<String>\",\n                      moved_to,\n                      created_at AS \"created_at: chrono::DateTime<chrono::Utc>\",\n                      updated_at AS \"updated_at: chrono::DateTime<chrono::Utc>\"\n               FROM actors WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_id: ApId",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "domain",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_type",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "summary",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "public_key_pem",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "private_key_pem",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "inbox_url",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "outbox_url",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "followers_url",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "following_url",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "shared_inbox_url",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "manually_approves_followers: bool",
+        "ordinal": 14,
+        "type_info": "Integer"
+      },
+      {
+        "name": "is_local: bool",
+        "ordinal": 15,
+        "type_info": "Integer"
+      },
+      {
+        "name": "is_suspended: bool",
+        "ordinal": 16,
+        "type_info": "Integer"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "also_known_as: JsonVec<String>",
+        "ordinal": 18,
+        "type_info": "Text"
+      },
+      {
+        "name": "moved_to",
+        "ordinal": 19,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 20,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 21,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "fda737d4d16109aa36cff2676ac64703f6ad044552cb783eb6cec55fba182259"
+}

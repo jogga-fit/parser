@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE followers SET accepted = 1 WHERE actor_id = ? AND accepted = 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "3ad4aea5d49de799b44ec6d6599b39c085c926ffa18a1730e5906b3a60161966"
+}

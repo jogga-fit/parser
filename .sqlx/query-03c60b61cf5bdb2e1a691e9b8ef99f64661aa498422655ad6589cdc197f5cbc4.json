@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM notifications WHERE actor_id = ? AND from_actor_id = ? AND object_ap_id = ? AND kind = 'like'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "03c60b61cf5bdb2e1a691e9b8ef99f64661aa498422655ad6589cdc197f5cbc4"
+}

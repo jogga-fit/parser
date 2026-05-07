@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id: Uuid\",\n                          object_ap_id, url, media_type, caption,\n                          position AS \"position: i32\",\n                          created_at AS \"created_at: chrono::DateTime<chrono::Utc>\"\n                   FROM media_attachments\n                   WHERE object_ap_id = ?\n                   ORDER BY position ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_ap_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "media_type",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "caption",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "position: i32",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "3064c7ce1e763060bbffe4d6f6857b040652d1d580b602906b480f683d592ecd"
+}

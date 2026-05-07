@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE objects\n               SET content = ?, summary = ?, ap_json = ?,\n                   updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')\n               WHERE ap_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "f77b4636fff918107d6e8e2eae598976a1acd3a6af3a8fe5dc92dd19b3da0125"
+}

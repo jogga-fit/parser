@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.ap_id, a.username, a.domain,\n                      a.is_local AS \"is_local: bool\",\n                      a.display_name, a.avatar_url,\n                      f.accepted AS \"accepted: bool\",\n                      f.follow_ap_id\n               FROM followers f\n               JOIN actors a ON a.id = f.follower_id\n               WHERE f.actor_id = ?\n               ORDER BY f.created_at DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "domain",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_local: bool",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "accepted: bool",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "follow_ap_id",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "a52fc73661f91ea42981d8dcc877311c2507be092616f217e4f9e000b40e10a2"
+}

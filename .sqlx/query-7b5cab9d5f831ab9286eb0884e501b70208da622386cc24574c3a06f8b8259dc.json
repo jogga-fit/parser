@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.published AS \"ts: DateTime<Utc>\"\n               FROM activities a\n               JOIN outbox_items o ON o.activity_id = a.id\n               WHERE o.owner_id = ? AND a.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "ts: DateTime<Utc>",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7b5cab9d5f831ab9286eb0884e501b70208da622386cc24574c3a06f8b8259dc"
+}

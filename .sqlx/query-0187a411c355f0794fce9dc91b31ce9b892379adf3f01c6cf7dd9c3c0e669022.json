@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM media_attachments WHERE object_ap_id = ? AND url = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "0187a411c355f0794fce9dc91b31ce9b892379adf3f01c6cf7dd9c3c0e669022"
+}

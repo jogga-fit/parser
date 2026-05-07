@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM objects WHERE ap_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "919d4035fdd77aff3d883b9a1f8ff7560b59966c2b699c33f134a9eaee7c3d27"
+}

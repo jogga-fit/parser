@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO following (id, actor_id, target_id, accepted)\n               VALUES (?, ?, ?, 0)\n               ON CONFLICT (actor_id, target_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "5dbf0a2cc792787ad7357f84dfc1000dfe57f3e10efdcfd37e785bab95b2aa30"
+}

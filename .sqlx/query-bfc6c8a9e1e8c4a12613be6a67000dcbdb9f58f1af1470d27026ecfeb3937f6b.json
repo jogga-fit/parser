@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO activities\n               (id, ap_id, activity_type, actor_id, object_ap_id, target_ap_id, object_id, ap_json)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n               ON CONFLICT (ap_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "bfc6c8a9e1e8c4a12613be6a67000dcbdb9f58f1af1470d27026ecfeb3937f6b"
+}

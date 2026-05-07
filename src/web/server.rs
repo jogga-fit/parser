@@ -1,0 +1,134 @@
+use std::{path::Path, sync::OnceLock};
+
+pub use activitypub_federation::{
+    config::FederationConfig,
+    fetch::object_id::ObjectId,
+    kinds::activity::{CreateType, DeleteType, UpdateType},
+};
+use axum::{Router, extract::DefaultBodyLimit};
+pub use bs58;
+pub use chrono::Utc;
+use dioxus::prelude::{DioxusRouterExt, ServeConfig};
+pub use sqlx;
+use tower_http::{compression::CompressionLayer, timeout::TimeoutLayer, trace::TraceLayer};
+use tracing_subscriber::{EnvFilter, fmt};
+pub use uuid::Uuid;
+
+pub use crate::{
+    db::queries::{
+        AccountQueries, ActivityQueries, ActorQueries, ExerciseQueries, FollowQueries, LikeQueries,
+        MediaAttachmentQueries, NotificationQueries, ObjectQueries, activity::NewActivity,
+        object::NewObject,
+    },
+    server::state::AppState,
+    server::{
+        impls::actor::DbActor,
+        protocol::{
+            accept::Accept,
+            create::Create,
+            delete::{Delete, DeleteObject},
+            follow::Follow,
+            reject::Reject,
+            update::Update,
+        },
+    },
+};
+
+static FEDERATION_CONFIG: OnceLock<FederationConfig<AppState>> = OnceLock::new();
+
+#[allow(dead_code)]
+pub(crate) fn request_data() -> activitypub_federation::config::Data<AppState> {
+    FEDERATION_CONFIG
+        .get()
+        .expect("not initialized")
+        .to_request_data()
+}
+
+pub async fn run_server(config_path: Option<&Path>) {
+    fmt().with_env_filter(EnvFilter::from_default_env()).init();
+
+    let config =
+        crate::server::config::AppConfig::load(config_path).expect("failed to load config");
+
+    let state = crate::server::state::AppState::new(&config)
+        .await
+        .expect("failed to build AppState");
+
+    // Auto-seed owner on first boot if config specifies one and no local actors exist.
+    let local_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM actors WHERE is_local = 1")
+            .fetch_one(&state.db)
+            .await
+            .unwrap_or(0);
+    if local_count == 0 && !config.owner.username.is_empty() && !config.owner.contact.is_empty() {
+        let initial_password = crate::server::auth::generate_token();
+        match crate::server::service::seed_owner(
+            &state.db,
+            &config.owner.username,
+            &initial_password,
+            &config.instance.domain,
+            config.instance.scheme(),
+            &config.owner.contact,
+        )
+        .await
+        {
+            Ok(()) => {
+                tracing::warn!(
+                    username = %config.owner.username,
+                    contact = %config.owner.contact,
+                    "First boot: owner account seeded. Sending password-reset OTP."
+                );
+                match crate::server::service::do_password_reset_init(
+                    &state,
+                    &config.owner.contact,
+                )
+                .await
+                {
+                    Ok(_) => tracing::warn!(
+                        contact = %config.owner.contact,
+                        "First boot: password-reset OTP sent. Follow the link to set your password."
+                    ),
+                    Err(e) => tracing::warn!(
+                        error = %e,
+                        contact = %config.owner.contact,
+                        "First boot: OTP delivery failed. Use forgot-password on the web UI to set your password."
+                    ),
+                }
+            }
+            Err(e) => tracing::warn!(error = %e, "Auto-seed skipped"),
+        }
+    }
+
+    let (ap_router, fed_config) = crate::server::app::build_router(state)
+        .await
+        .expect("failed to build AP router");
+
+    FEDERATION_CONFIG.set(fed_config.clone()).ok();
+
+    tokio::spawn(crate::server::delivery::run_delivery_worker(fed_config));
+
+    let dx_router: axum::Router<()> = Router::new()
+        .serve_dioxus_application(
+            ServeConfig::new().enable_out_of_order_streaming(),
+            crate::web::app::App,
+        )
+        .layer(CompressionLayer::new())
+        .layer(TraceLayer::new_for_http())
+        .layer(TimeoutLayer::with_status_code(
+            axum::http::StatusCode::REQUEST_TIMEOUT,
+            std::time::Duration::from_secs(30),
+        ))
+        .layer(DefaultBodyLimit::disable());
+
+    let full_router = axum::Router::new().merge(ap_router).merge(dx_router);
+
+    let addr = format!("{}:{}", config.server.host, config.server.port);
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .expect("bind failed");
+
+    tracing::info!(addr = %addr, "Jogga: (fedisport) listening");
+    axum::serve(listener, full_router.into_make_service())
+        .await
+        .expect("serve error");
+}

@@ -1,5 +1,150 @@
 [workspace]
 resolver = "2"
-members = [
-    "parser",
-]
+members  = ["parser"]
+
+[workspace.dependencies]
+serde      = { version = "1", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+
+[package]
+name         = "jogga"
+description  = "An ActivityPub server for social fitness"
+version      = "0.1.0"
+edition      = "2024"
+authors      = ["Devdutt Shenoi <devdutt@outlook.in>"]
+license-file = "LICENSE"
+rust-version = "1.85"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "jogga"
+path = "src/main.rs"
+
+[features]
+web        = ["dioxus/web"]
+server     = ["dioxus/server", "dioxus-fullstack/server"]
+wasm-split = ["dioxus/wasm-split", "dep:dioxus-router", "dioxus-router/wasm-split"]
+
+[dependencies]
+# Serialisation
+serde      = { workspace = true }
+serde_json = "1"
+
+# Utilities
+base64 = "0.22"
+chrono = { workspace = true }
+url    = { version = "2",   features = ["serde"] }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Observability
+tracing = "0.1"
+
+# Workspace members
+parser = { path = "./parser" }
+
+# Core Dioxus
+dioxus        = { version = "0.7", features = ["router", "fullstack"] }
+dioxus-logger = "0.7.2"
+dioxus-router = { version = "0.7", optional = true }
+dioxus-use-js = "0.4.6"
+
+# Mapping
+color          = { version = "0.3.2", features = ["serde"] }
+dioxus-leaflet = { git = "https://github.com/jogga-fit/dioxus-leaflet", rev = "bb8cea7" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+dioxus-fullstack     = { version = "0.7" }
+futures-channel      = "0.3"
+gloo-timers          = { version = "0.3", features = ["futures"] }
+js-sys               = "0.3"
+wasm-bindgen         = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = [
+    "Blob", "CanvasRenderingContext2d", "Clipboard", "console",
+    "Document", "Element",
+    "File", "FileList",
+    "HtmlCanvasElement", "HtmlElement", "HtmlInputElement",
+    "ImageBitmap",
+    "Navigator",
+    "Storage",
+    "Url",
+    "Window",
+] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP server + middleware
+axum       = { version = "0.8", features = ["macros", "multipart"] }
+http       = "1"
+tower-http = { version = "0.6", features = [
+    "compression-br", "cors", "fs", "limit",
+    "request-id", "timeout", "trace",
+] }
+
+# ActivityPub federation
+activitypub_federation = { version = "0.7.0-beta.11", features = ["axum"] }
+async-trait            = "0.1"
+enum_delegate          = "0.2"
+# Pins reqwest 0.13 with rustls — required by activitypub_federation's transitive dep.
+reqwest013 = { package = "reqwest", version = "0.13", default-features = false, features = ["rustls"] }
+
+# Database (SQLite)
+libsqlite3-sys = { version = "0.30", features = ["bundled"] }
+sqlx           = { version = "0.8", features = [
+    "chrono", "json", "macros", "migrate",
+    "runtime-tokio-rustls", "sqlite", "uuid",
+] }
+
+# Cryptography
+argon2 = { version = "0.5", features = ["std"] }
+bs58   = "0.5"
+rand   = "0.8"
+rsa    = { version = "0.9", features = ["sha2", "pem"] }
+sha1   = "0.10"
+sha2   = "0.10"
+uuid   = { version = "1",   features = ["v4", "v7", "serde"] }
+
+# HTTP client
+lettre  = { version = "0.11", default-features = false, features = [
+    "builder", "hostname", "smtp-transport", "tokio1-rustls-tls", "webpki-roots",
+] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Observability
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration & CLI
+clap   = { version = "4",    features = ["derive", "env"] }
+config = { version = "0.14", features = ["toml"] }
+
+# Frontend — server side of the fullstack pair
+dioxus-fullstack = { version = "0.7", features = ["server"] }
+
+[target.'cfg(all(not(target_arch = "wasm32"), target_env = "musl"))'.dependencies]
+# Replaces musl's single-lock allocator with mimalloc's per-thread free lists,
+# dramatically reducing contention under concurrent HTTP load.
+mimalloc = { version = "0.1", default-features = false }
+
+[dev-dependencies]
+axum-test = "20"
+bytes     = "1"
+tempfile  = "3"
+
+[build-dependencies]
+dioxus-use-js = { version = "0.4.6", features = ["build"] }
+
+[lints]
+rust   = { unsafe_code = "forbid" }
+clippy = { unwrap_used = "warn", todo = "warn" }
+
+[profile]
+release-wasm = { inherits = "release", opt-level = "z", lto = true, codegen-units = 1 }
+wasm-dev     = { inherits = "dev",     opt-level = 1,   lto = true, codegen-units = 1, debug = true }
+server-dev   = { inherits = "dev",                      lto = true, codegen-units = 1, debug = true }

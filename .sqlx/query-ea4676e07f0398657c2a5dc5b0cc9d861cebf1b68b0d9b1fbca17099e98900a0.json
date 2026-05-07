@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO inbox_items (id, owner_id, activity_id)\n               VALUES (?, ?, ?)\n               ON CONFLICT (owner_id, activity_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "ea4676e07f0398657c2a5dc5b0cc9d861cebf1b68b0d9b1fbca17099e98900a0"
+}

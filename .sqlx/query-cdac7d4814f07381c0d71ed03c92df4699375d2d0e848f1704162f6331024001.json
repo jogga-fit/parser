@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO notifications\n                   (id, actor_id, kind, from_actor_id, object_ap_id, object_title)\n               VALUES (?, ?, ?, ?, ?, ?)\n               ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "cdac7d4814f07381c0d71ed03c92df4699375d2d0e848f1704162f6331024001"
+}

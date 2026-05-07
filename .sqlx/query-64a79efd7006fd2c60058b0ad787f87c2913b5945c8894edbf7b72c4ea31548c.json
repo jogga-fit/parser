@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT ap_id FROM objects WHERE ap_id LIKE ? AND object_type = 'Note'",
+  "describe": {
+    "columns": [
+      {
+        "name": "ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "64a79efd7006fd2c60058b0ad787f87c2913b5945c8894edbf7b72c4ea31548c"
+}

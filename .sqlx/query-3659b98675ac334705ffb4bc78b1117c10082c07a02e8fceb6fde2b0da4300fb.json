@@ -1,0 +1,158 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT e.id              AS \"id: Uuid\",\n                      e.actor_id        AS \"actor_id: Uuid\",\n                      a.ap_id           AS \"actor_ap_id\",\n                      o.ap_id           AS \"object_ap_id\",\n                      e.object_id       AS \"object_id: Uuid\",\n                      e.activity_type, e.started_at AS \"started_at: DateTime<Utc>\",\n                      e.duration_s AS \"duration_s: i32\", e.distance_m,\n                      e.elevation_gain_m, e.avg_pace_s_per_km,\n                      e.avg_heart_rate_bpm AS \"avg_heart_rate_bpm: i32\",\n                      e.max_heart_rate_bpm AS \"max_heart_rate_bpm: i32\",\n                      e.avg_cadence_rpm, e.avg_power_w,\n                      e.max_power_w, e.normalized_power_w, e.title,\n                      COALESCE(e.file_type, 'gpx') AS \"file_type!: String\",\n                      e.device, e.gpx_url, e.visibility,\n                      COALESCE(e.hidden_stats, '[]') AS \"hidden_stats!: JsonVec<String>\",\n                      e.created_at AS \"created_at: DateTime<Utc>\"\n               FROM exercises e\n               JOIN actors  a ON a.id = e.actor_id\n               JOIN objects o ON o.id = e.object_id\n               WHERE e.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_ap_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_ap_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_id: Uuid",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "activity_type",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "started_at: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "duration_s: i32",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "distance_m",
+        "ordinal": 8,
+        "type_info": "Float"
+      },
+      {
+        "name": "elevation_gain_m",
+        "ordinal": 9,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_pace_s_per_km",
+        "ordinal": 10,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_heart_rate_bpm: i32",
+        "ordinal": 11,
+        "type_info": "Integer"
+      },
+      {
+        "name": "max_heart_rate_bpm: i32",
+        "ordinal": 12,
+        "type_info": "Integer"
+      },
+      {
+        "name": "avg_cadence_rpm",
+        "ordinal": 13,
+        "type_info": "Float"
+      },
+      {
+        "name": "avg_power_w",
+        "ordinal": 14,
+        "type_info": "Float"
+      },
+      {
+        "name": "max_power_w",
+        "ordinal": 15,
+        "type_info": "Float"
+      },
+      {
+        "name": "normalized_power_w",
+        "ordinal": 16,
+        "type_info": "Float"
+      },
+      {
+        "name": "title",
+        "ordinal": 17,
+        "type_info": "Text"
+      },
+      {
+        "name": "file_type!: String",
+        "ordinal": 18,
+        "type_info": "Null"
+      },
+      {
+        "name": "device",
+        "ordinal": 19,
+        "type_info": "Text"
+      },
+      {
+        "name": "gpx_url",
+        "ordinal": 20,
+        "type_info": "Text"
+      },
+      {
+        "name": "visibility",
+        "ordinal": 21,
+        "type_info": "Text"
+      },
+      {
+        "name": "hidden_stats!: JsonVec<String>",
+        "ordinal": 22,
+        "type_info": "Null"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 23,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      null,
+      true,
+      true,
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "3659b98675ac334705ffb4bc78b1117c10082c07a02e8fceb6fde2b0da4300fb"
+}

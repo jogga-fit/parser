@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                   a.ap_id              AS activity_ap_id,\n                   a.activity_type,\n                   act.username         AS actor_username,\n                   act.domain           AS actor_domain,\n                   act.is_local         AS \"actor_is_local: bool\",\n                   act.ap_id            AS actor_ap_id,\n                   act.avatar_url       AS actor_avatar_url,\n                   a.ap_json            AS \"ap_json: JsonValue\",\n                   a.published          AS \"published: DateTime<Utc>\"\n               FROM outbox_items oi\n               JOIN activities a   ON a.id   = oi.activity_id\n               JOIN actors     act ON act.id = a.actor_id\n               LEFT JOIN objects o ON o.ap_id = a.object_ap_id\n               WHERE act.is_local = 1\n                 AND a.activity_type = 'Create'\n                 AND (o.id IS NULL OR o.visibility = 'public')\n               ORDER BY a.published DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "activity_ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "activity_type",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_username",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_domain",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_is_local: bool",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "actor_ap_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_avatar_url",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_json: JsonValue",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "published: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "c81774fdf77dc651bb7ac646127fcb2e1c84974f8e9a476ff52300c8f0c09481"
+}

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT ap_id FROM objects WHERE in_reply_to = ? ORDER BY published ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "ap_id",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "62cba866d33e061af16a3b035f79b418f16ac0e9918b47b063aff3b91ac1a4d6"
+}

@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT n.id       AS \"id: Uuid\",\n                      n.kind,\n                      a.ap_id   AS from_ap_id,\n                      a.username AS from_username,\n                      a.display_name AS from_display_name,\n                      a.avatar_url   AS from_avatar_url,\n                      n.object_ap_id, n.object_title,\n                      n.is_read AS \"is_read: bool\",\n                      n.created_at AS \"created_at: chrono::DateTime<chrono::Utc>\"\n               FROM notifications n\n               JOIN actors a ON a.id = n.from_actor_id\n               WHERE n.actor_id = ?\n               ORDER BY n.created_at DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "kind",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "from_ap_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "from_username",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "from_display_name",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "from_avatar_url",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_ap_id",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_title",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_read: bool",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at: chrono::DateTime<chrono::Utc>",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "98cc882daa9a864b4dfc5a169ee2528c7242a35e2ae554a6fea261c8c7efb325"
+}

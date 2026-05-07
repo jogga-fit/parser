@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE notifications SET is_read = 1 WHERE actor_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "e801293cd5a731f2726448aa087d3d6d7f369593ebab7c9b4e220797717f7598"
+}

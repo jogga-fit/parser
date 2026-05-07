@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO objects\n               (id, ap_id, object_type, attributed_to, actor_id, content,\n                content_map, summary, sensitive, in_reply_to, published,\n                url, ap_json, visibility)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 14
+    },
+    "nullable": []
+  },
+  "hash": "0fed992b2adc1bb3d81b53274b62e5bf27f5c6289455ec78c7a83342c8e4cee4"
+}

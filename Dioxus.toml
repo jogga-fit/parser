@@ -1,0 +1,26 @@
+# Run dx from the WORKSPACE ROOT, not this directory:
+#   dx serve --package web --features wasm-split --wasm-split
+#   dx build --package web --release --features wasm-split --wasm-split
+
+[application]
+name = "jogga"
+default_platform = "fullstack"
+out_dir = "dist"
+
+[web]
+pre_compress = true
+
+[web.app]
+title = "Jogga:"
+base_path = "/"
+
+[web.watcher]
+watch_path = ["src/web", "assets"]
+
+[web.resource]
+style = []
+script = []
+
+[web.resource.dev]
+style = []
+script = []

@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id          AS \"id: Uuid\",\n                          a.ap_id,\n                          a.activity_type,\n                          a.actor_id     AS \"actor_id: Uuid\",\n                          a.object_ap_id, a.target_ap_id,\n                          a.object_id    AS \"object_id: Uuid\",\n                          a.ap_json      AS \"ap_json: JsonValue\",\n                          a.published    AS \"published: DateTime<Utc>\",\n                          a.created_at   AS \"created_at: DateTime<Utc>\"\n                   FROM activities a\n                   JOIN outbox_items o ON o.activity_id = a.id\n                   WHERE o.owner_id = ?\n                   ORDER BY a.published DESC\n                   LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "activity_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_ap_id",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "target_ap_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_id: Uuid",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_json: JsonValue",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "published: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e33c982297de750fd266ddc686945ecb7b1d91b2b04c04e6304cba8d1baa3117"
+}

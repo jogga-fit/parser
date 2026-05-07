@@ -1,0 +1,116 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id              AS \"id: Uuid\",\n                      ap_id,\n                      object_type, attributed_to,\n                      actor_id        AS \"actor_id: Uuid\",\n                      content, content_map AS \"content_map: JsonValue\",\n                      summary,\n                      sensitive       AS \"sensitive: bool\",\n                      in_reply_to, reply_count AS \"reply_count: i32\", published AS \"published: DateTime<Utc>\",\n                      url, ap_json    AS \"ap_json: JsonValue\",\n                      visibility,\n                      created_at      AS \"created_at: DateTime<Utc>\",\n                      updated_at      AS \"updated_at: DateTime<Utc>\"\n               FROM objects WHERE ap_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_id",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "object_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "attributed_to",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id: Uuid",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "content",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "content_map: JsonValue",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "summary",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "sensitive: bool",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "in_reply_to",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "reply_count: i32",
+        "ordinal": 10,
+        "type_info": "Integer"
+      },
+      {
+        "name": "published: DateTime<Utc>",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "ap_json: JsonValue",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "visibility",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 15,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at: DateTime<Utc>",
+        "ordinal": 16,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "f07f2ee60a91935200ca8740b74acbc1cabc34c92c67456ec49770d5aa4f3704"
+}
