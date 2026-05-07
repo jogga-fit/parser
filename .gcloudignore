@@ -1,0 +1,22 @@
+# Git
+.git/
+.gitignore
+
+# Rust build artifacts
+target/
+
+# Claude / dev tooling
+.claude/
+.cargo/
+
+# Local config and secrets
+*.toml
+!example.config.toml
+.env
+.env.*
+
+# Docs and assets that aren't needed for the Docker build
+docs/
+
+# OS
+.DS_Store
