@@ -41,11 +41,12 @@ pub struct ExerciseUploadResult {
 
 pub const VALID_VISIBILITY: &[&str] = &["public", "unlisted", "followers", "private"];
 
+/// Allowed activity types — must exactly match the DB CHECK constraint in exercises table:
+/// `activity_type IN ('run', 'ride', 'swim', 'walk', 'hike')`
+pub const VALID_ACTIVITY_TYPES: &[&str] = &["run", "ride", "swim", "walk", "hike"];
+
 pub(super) fn is_valid_activity_type(s: &str) -> bool {
-    !s.is_empty()
-        && s.len() <= 50
-        && s.chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+    VALID_ACTIVITY_TYPES.contains(&s)
 }
 
 #[tracing::instrument(skip(state, req, actor), fields(username = actor.username))]
@@ -57,10 +58,10 @@ pub async fn do_upload_exercise(
     use parser::ParsedActivity;
 
     if !is_valid_activity_type(&req.activity_type) {
-        return Err(AppError::BadRequest(
-            "invalid activityType: must be a non-empty lowercase kebab-case string (max 50 chars)"
-                .into(),
-        ));
+        return Err(AppError::BadRequest(format!(
+            "invalid activityType: must be one of {}",
+            VALID_ACTIVITY_TYPES.join(", ")
+        )));
     }
     if !VALID_VISIBILITY.contains(&req.visibility.as_str()) {
         return Err(AppError::BadRequest(format!(

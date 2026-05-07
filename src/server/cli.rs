@@ -33,6 +33,9 @@ pub struct SeedOwnerArgs {
     pub email: String,
     pub password: String,
     pub domain: String,
+    /// URL scheme — `"http"` for localhost dev, `"https"` for production.
+    /// Use `config.instance.scheme()` to derive this automatically.
+    pub scheme: String,
 }
 
 /// Seed the single owner account with the supplied arguments.
@@ -47,7 +50,7 @@ pub async fn seed_owner(pool: &SqlitePool, args: SeedOwnerArgs) -> Result<(), Ap
         &args.username,
         &args.password,
         &args.domain,
-        "https",
+        &args.scheme,
         &args.email,
     )
     .await

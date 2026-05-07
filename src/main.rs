@@ -41,6 +41,7 @@ fn main() {
                         email: config.owner.contact.clone(),
                         password,
                         domain: config.instance.domain.clone(),
+                        scheme: config.instance.scheme().to_owned(),
                     };
 
                     seed_owner(&pool, args).await.expect("seed-owner failed");

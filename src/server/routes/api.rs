@@ -4,7 +4,7 @@
 //! Password reset: owner's contact is from config or stored account contact.
 
 use activitypub_federation::config::Data;
-use axum::{Json, extract::Multipart, http::StatusCode, response::IntoResponse};
+use axum::{Json, extract::{Multipart, Query}, http::StatusCode, response::IntoResponse};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::info;
@@ -434,12 +434,20 @@ pub async fn unlike(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[derive(Deserialize)]
+pub struct PaginationParams {
+    /// Maximum number of items to return. Defaults to 20, capped at 100.
+    pub limit: Option<i64>,
+}
+
 pub async fn list_notifications(
     data: Data<AppState>,
     auth: AuthenticatedUser,
+    Query(params): Query<PaginationParams>,
 ) -> Result<impl IntoResponse, AppError> {
+    let limit = params.limit.unwrap_or(20).clamp(1, 100);
     let notifications =
-        crate::db::queries::NotificationQueries::list(&data.db, auth.actor.id, 50).await?;
+        crate::db::queries::NotificationQueries::list(&data.db, auth.actor.id, limit).await?;
     Ok(Json(json!({ "notifications": notifications })))
 }
 

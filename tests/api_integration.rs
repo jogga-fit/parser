@@ -41,6 +41,7 @@ async fn make_server() -> (TempDir, TestServer) {
             email: OWNER_EMAIL.into(),
             password: OWNER_PASSWORD.into(),
             domain: DOMAIN.into(),
+            scheme: config.instance.scheme().to_owned(),
         },
     )
     .await
@@ -331,11 +332,20 @@ async fn password_reset_init_omitting_contact_uses_owner_config_email() {
 // ── POST /api/v1/accounts/password-reset/verify ─────────────────────────────
 
 /// Full happy path: init → grab code from debug response → verify → new token
+///
+/// In all builds: verifies init returns 202 with `otp_id`.
+/// In debug builds only: verifies with the OTP code and checks the returned token.
+///
+/// Note: the `code` field is only echoed back in debug builds (the server gates it
+/// on `cfg!(debug_assertions)`). In release builds there is no way to retrieve the
+/// OTP code from the API response, so the verify flow cannot be tested without a
+/// real OTP delivery channel (email/SMS). This is intentional — it prevents
+/// test-only backdoors from leaking into production binaries.
 #[tokio::test]
 async fn password_reset_verify_valid_otp_returns_token() {
     let (_dir, server) = make_server().await;
 
-    // Step 1 — init
+    // Step 1 — init: always runs in all build profiles.
     let init_resp = server
         .post("/api/v1/accounts/password-reset/init")
         .json(&json!({ "contact": OWNER_EMAIL }))
@@ -343,15 +353,16 @@ async fn password_reset_verify_valid_otp_returns_token() {
     init_resp.assert_status(axum::http::StatusCode::ACCEPTED);
     let init_body: Value = init_resp.json();
 
+    // Always validate the 202 response structure regardless of build profile.
+    assert!(init_body["otp_id"].is_string(), "expected otp_id field in init response");
     let otp_id = init_body["otp_id"].as_str().expect("otp_id");
 
-    // The `code` field is only present in debug builds (cfg!(debug_assertions) gate).
-    // If we're in a release build this test will be skipped at the cfg gate below.
+    // Step 2 — verify: only runs in debug builds where the server echoes the code.
+    // In release builds the `code` field is absent; see note in doc comment above.
     #[cfg(debug_assertions)]
     {
         let code = init_body["code"].as_str().expect("code in debug build");
 
-        // Step 2 — verify
         let verify_resp = server
             .post("/api/v1/accounts/password-reset/verify")
             .json(&json!({

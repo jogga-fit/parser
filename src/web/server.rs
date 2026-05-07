@@ -107,6 +107,17 @@ pub async fn run_server(config_path: Option<&Path>) {
 
     tokio::spawn(crate::server::delivery::run_delivery_worker(fed_config));
 
+    // The Dioxus SSR router MUST use `DefaultBodyLimit::disable()` because
+    // `serve_dioxus_application` installs a catch-all handler for server functions
+    // that may receive chunked/multipart bodies. Axum's DefaultBodyLimit is not
+    // negotiated per-route by the Dioxus integration, so any global limit here
+    // would silently reject valid server-function calls.
+    //
+    // Upload size enforcement is handled at two layers:
+    //   1. The `/api/exercises/upload` route in `ap_router` applies a 10 MB
+    //      `DefaultBodyLimit::max` *before* this Dioxus catch-all is reached.
+    //   2. The reverse proxy (nginx / Cloudflare) enforces an outer request size
+    //      limit (typically 10–50 MB) for all inbound traffic.
     let dx_router: axum::Router<()> = Router::new()
         .serve_dioxus_application(
             ServeConfig::new().enable_out_of_order_streaming(),
