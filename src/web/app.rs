@@ -61,6 +61,9 @@ pub enum Route {
     // so we use /:username and validate the @ in the component.
     #[route("/:username")]
     UserProfile { username: String },
+    // Catch-all for any path that didn't match above.
+    #[route("/:..segments")]
+    PageNotFound { segments: Vec<String> },
 }
 
 /// Top-level app component. Provides auth context and the router.
@@ -292,6 +295,34 @@ fn UserProfile(username: String) -> Element {
     // ProfilePage handles not-found via its own DNF component.
     let u = username.trim_start_matches('@').to_string();
     rsx! { ProfilePage { key: "{u}", username: u } }
+}
+
+#[component]
+fn PageNotFound(segments: Vec<String>) -> Element {
+    let nav = use_navigator();
+    rsx! {
+        div { class: "not-found-page",
+            div { class: "not-found-blob-wrap",
+                div { class: "nf-blob nf-blob-a" }
+                div { class: "nf-blob nf-blob-b" }
+            }
+            div { class: "not-found-card",
+                div { class: "nf-illustration",
+                    i { class: "ph ph-question nf-runner" }
+                    span { class: "nf-arrow", "←" }
+                    i { class: "ph ph-flag-checkered nf-flag" }
+                }
+                p { class: "nf-label", "did not qualify" }
+                h1 { class: "nf-title", "DNQ" }
+                p { class: "nf-desc", "We don't know what you are looking for." }
+                button {
+                    class: "btn btn-primary",
+                    onclick: move |_| { nav.push(Route::Index {}); },
+                    "Back to home"
+                }
+            }
+        }
+    }
 }
 
 #[component]
