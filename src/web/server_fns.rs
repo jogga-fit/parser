@@ -75,8 +75,7 @@ pub async fn login(
         .await
         .map_err(|e| {
             let msg = match e {
-                AppError::NotFound => "No account found with that username or email",
-                AppError::Unauthorized => "Incorrect password.",
+                AppError::NotFound | AppError::Unauthorized => "Invalid credentials",
                 _ => "Login failed. Please try again.",
             };
             ServerFnError::new(msg)
@@ -733,8 +732,17 @@ pub async fn delete_account(token: String) -> Result<(), ServerFnError> {
         .map_err(|e| ServerFnError::new(e.to_string()))
 }
 
-#[server]
-pub async fn follow_actor(token: String, handle_or_url: String) -> Result<(), ServerFnError> {
+/// Shared implementation for [`follow_actor`] and [`follow_person`].
+///
+/// Resolves `handle_or_url` (a `@user@domain` WebFinger handle or a bare AP URL)
+/// to an ActivityPub ID and sends a Follow activity.
+/// `person_only` is forwarded to `do_follow` to restrict the target actor type.
+#[cfg(feature = "server")]
+async fn follow_with_options(
+    token: String,
+    handle_or_url: String,
+    person_only: bool,
+) -> Result<(), ServerFnError> {
     use crate::web::server::*;
     let _rd = request_data();
     let state = _rd.app_data();
@@ -796,76 +804,19 @@ pub async fn follow_actor(token: String, handle_or_url: String) -> Result<(), Se
     };
 
     let data = request_data();
-    crate::server::service::do_follow(&data, account.actor_id, &ap_id, false)
+    crate::server::service::do_follow(&data, account.actor_id, &ap_id, person_only)
         .await
         .map_err(into_sfn_err)
 }
 
 #[server]
+pub async fn follow_actor(token: String, handle_or_url: String) -> Result<(), ServerFnError> {
+    follow_with_options(token, handle_or_url, false).await
+}
+
+#[server]
 pub async fn follow_person(token: String, handle_or_url: String) -> Result<(), ServerFnError> {
-    use crate::web::server::*;
-    let _rd = request_data();
-    let state = _rd.app_data();
-    let account = AccountQueries::find_by_token(&state.db, &token)
-        .await
-        .map_err(|_| ServerFnError::new("invalid token"))?;
-
-    let ap_id = if handle_or_url.starts_with('@') {
-        let handle = handle_or_url.trim_start_matches('@');
-        let parts: Vec<&str> = handle.splitn(2, '@').collect();
-        if parts.len() != 2 {
-            return Err(ServerFnError::new(format!("invalid handle: @{handle}")));
-        }
-        let (user, domain) = (parts[0], parts[1]);
-        let scheme = if domain.starts_with("localhost") {
-            "http"
-        } else {
-            "https"
-        };
-        let url =
-            format!("{scheme}://{domain}/.well-known/webfinger?resource=acct:{user}@{domain}");
-
-        let resp = state
-            .http
-            .get(&url)
-            .header("Accept", "application/json")
-            .send()
-            .await
-            .map_err(|e| ServerFnError::new(format!("WebFinger request failed: {e}")))?;
-
-        if !resp.status().is_success() {
-            return Err(ServerFnError::new(format!(
-                "WebFinger returned {}",
-                resp.status()
-            )));
-        }
-
-        let jrd: serde_json::Value = resp
-            .json()
-            .await
-            .map_err(|e| ServerFnError::new(format!("WebFinger parse error: {e}")))?;
-
-        jrd["links"]
-            .as_array()
-            .and_then(|links| {
-                links.iter().find(|l| {
-                    l["rel"].as_str() == Some("self")
-                        && l["type"]
-                            .as_str()
-                            .is_some_and(|t| t.contains("activity+json"))
-                })
-            })
-            .and_then(|l| l["href"].as_str())
-            .map(str::to_owned)
-            .ok_or_else(|| ServerFnError::new("WebFinger: no ActivityPub self link found"))?
-    } else {
-        handle_or_url
-    };
-
-    let data = request_data();
-    crate::server::service::do_follow(&data, account.actor_id, &ap_id, true)
-        .await
-        .map_err(into_sfn_err)
+    follow_with_options(token, handle_or_url, true).await
 }
 
 #[server]
@@ -1049,6 +1000,12 @@ pub async fn upload_exercise_fn(
 
     if meta.image_urls.len() > 8 {
         return Err(ServerFnError::new("too many images: maximum 8 per post"));
+    }
+
+    if !meta.image_urls.is_empty() && state.config.storage.is_none() {
+        return Err(ServerFnError::new(
+            "Image uploads are not configured on this server",
+        ));
     }
 
     let result = crate::server::service::do_upload_exercise(
