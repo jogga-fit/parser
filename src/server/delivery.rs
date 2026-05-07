@@ -149,7 +149,9 @@ async fn process_due_deliveries(data: &activitypub_federation::config::Data<AppS
         match send_result {
             Ok(()) => {
                 info!(delivery_id = %delivery.id, "delivery succeeded");
-                let _ = DeliveryQueries::mark_success(&data.db, delivery.id).await;
+                if let Err(e) = DeliveryQueries::mark_success(&data.db, delivery.id).await {
+                    warn!(delivery_id = %delivery.id, err = %e, "delivery: mark_success failed — will retry");
+                }
             }
             Err(e) => {
                 let retry_at = next_retry(delivery.attempt_count);

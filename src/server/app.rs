@@ -19,6 +19,10 @@ use crate::server::{
     state::AppState,
 };
 
+const INBOX_BODY_LIMIT: usize = 1024 * 1024;       // 1 MB
+const UPLOAD_BODY_LIMIT: usize = 10 * 1024 * 1024; // 10 MB
+const DEFAULT_BODY_LIMIT: usize = 5 * 1024 * 1024; // 5 MB
+
 /// Build the Axum router wrapped in the federation middleware.
 pub async fn build_router(
     state: AppState,
@@ -44,11 +48,11 @@ pub async fn build_router(
         .route("/users/{username}/outbox", get(outbox::get_outbox))
         .route(
             "/users/{username}/inbox",
-            post(inbox::handle_inbox).route_layer(DefaultBodyLimit::max(1024 * 1024)),
+            post(inbox::handle_inbox).route_layer(DefaultBodyLimit::max(INBOX_BODY_LIMIT)),
         )
         .route(
             "/inbox",
-            post(inbox::handle_shared_inbox).route_layer(DefaultBodyLimit::max(1024 * 1024)),
+            post(inbox::handle_shared_inbox).route_layer(DefaultBodyLimit::max(INBOX_BODY_LIMIT)),
         )
         // Note AP endpoints
         .route("/notes/{id}", get(note::get_note))
@@ -95,10 +99,10 @@ pub async fn build_router(
             "/api/v1/accounts/password-reset/verify",
             post(api::password_reset_verify),
         )
-        // Write API — GPX upload (10 MB route-level limit)
+        // Write API — GPX/FIT upload
         .route(
             "/api/exercises/upload",
-            post(api::upload_exercise).route_layer(DefaultBodyLimit::max(10 * 1024 * 1024)),
+            post(api::upload_exercise).route_layer(DefaultBodyLimit::max(UPLOAD_BODY_LIMIT)),
         )
         // Write API — likes
         .route("/api/v1/likes", post(api::like))
@@ -109,7 +113,7 @@ pub async fn build_router(
             get(api::list_notifications).post(api::mark_notifications_read),
         )
         // Middleware
-        .layer(DefaultBodyLimit::max(5 * 1024 * 1024))
+        .layer(DefaultBodyLimit::max(DEFAULT_BODY_LIMIT))
         .layer(FederationMiddleware::new(federation_config.clone()))
         .layer(TraceLayer::new_for_http())
         .layer(TimeoutLayer::with_status_code(
@@ -120,7 +124,13 @@ pub async fn build_router(
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)
-                .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::PUT])
+                .allow_methods([
+                    Method::GET,
+                    Method::POST,
+                    Method::DELETE,
+                    Method::PUT,
+                    Method::PATCH,
+                ])
                 .allow_headers(Any),
         );
 

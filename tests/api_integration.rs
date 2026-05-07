@@ -101,7 +101,7 @@ async fn token_wrong_password_returns_401() {
 }
 
 #[tokio::test]
-async fn token_unknown_user_returns_404() {
+async fn token_unknown_user_returns_401() {
     let (_dir, server) = make_server().await;
 
     let resp = server
@@ -112,8 +112,8 @@ async fn token_unknown_user_returns_404() {
         }))
         .await;
 
-    // do_login returns AppError::NotFound when account is not found → 404.
-    resp.assert_status_not_found();
+    // Unknown account returns 401 (same as wrong password) to prevent account enumeration.
+    resp.assert_status_unauthorized();
 }
 
 // ── GET /api/v1/accounts/me ─────────────────────────────────────────────────
@@ -299,7 +299,7 @@ async fn password_reset_init_valid_email_returns_202_and_otp_id() {
 }
 
 #[tokio::test]
-async fn password_reset_init_unknown_email_returns_404() {
+async fn password_reset_init_unknown_email_still_returns_202() {
     let (_dir, server) = make_server().await;
 
     let resp = server
@@ -307,7 +307,10 @@ async fn password_reset_init_unknown_email_returns_404() {
         .json(&json!({ "contact": "nobody@example.com" }))
         .await;
 
-    resp.assert_status_not_found();
+    // Always 202 regardless of whether the contact is registered — prevents enumeration.
+    resp.assert_status(axum::http::StatusCode::ACCEPTED);
+    let body: Value = resp.json();
+    assert!(body["otp_id"].is_string(), "expected otp_id field even for unknown contact");
 }
 
 #[tokio::test]

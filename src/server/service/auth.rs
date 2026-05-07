@@ -241,14 +241,11 @@ pub async fn do_register_init(
         warn!(otp_id = %otp.id, "debug build — returning OTP in response");
         Some(code)
     } else {
-        let base_url = state.config.instance.base_url();
-        let magic_link = format!("{base_url}/reset-password?code={}.{code}", otp.id);
         state
             .notifier
             .send(&contact, contact_type, "registration", &code)
             .await
             .inspect_err(|e| warn!(error = %e, "OTP delivery failed"))?;
-        let _ = magic_link;
         None
     };
 

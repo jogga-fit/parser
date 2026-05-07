@@ -263,8 +263,6 @@ fn Settings() -> Element {
 fn NoteDetail(username: String, note_id: String) -> Element {
     // Only handle /@username paths.
     if let Some(u) = username.strip_prefix('@') {
-        let ap_id_prefix = format!("/@{u}");
-        let _ = ap_id_prefix; // suppress unused warning
         rsx! { PostDetailPage { object_ap_id: note_id } }
     } else {
         rsx! {

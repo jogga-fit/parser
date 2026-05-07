@@ -313,10 +313,6 @@ impl AppConfig {
             );
         }
 
-        #[cfg(debug_assertions)]
-        {
-            // In debug, otp_echo=true bypasses delivery; no warning needed.
-        }
     }
 
     /// Construct a minimal config for integration tests.

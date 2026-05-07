@@ -37,7 +37,6 @@ pub async fn get_actor(
     let row = ActorQueries::find_local_by_username(&data.db, &username).await?;
     let db_actor = DbActor { row };
     let person = db_actor.into_json(&data).await?;
-    let _ = StatusCode::OK;
     Ok(FederationJson(WithContext::new_default(person)).into_response())
 }
 
