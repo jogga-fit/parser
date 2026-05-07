@@ -126,6 +126,26 @@ pub fn generate_token() -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+/// Generate a human-readable placeholder password for first-boot owner seeding.
+///
+/// Format: 4 segments of 4 chars from an expanded charset (letters + digits +
+/// symbols), joined by `-`. Example: `aK7!-3mZq-Xp2@-9nBw`.
+/// 20 chars total, ~88 bits of entropy — strong enough to protect the account
+/// until the owner sets a real password via the reset flow.
+pub fn generate_placeholder_password() -> String {
+    const CHARSET: &[u8] = b"abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*";
+    let mut rng = rand::thread_rng();
+    let mut seg = || -> String {
+        (0..4)
+            .map(|_| {
+                let idx = (rng.next_u32() as usize) % CHARSET.len();
+                CHARSET[idx] as char
+            })
+            .collect()
+    };
+    format!("{}-{}-{}-{}", seg(), seg(), seg(), seg())
+}
+
 /// SHA-256 hex digest of a token.
 ///
 /// Tokens are generated as random hex strings and stored only as their SHA-256

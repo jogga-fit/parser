@@ -3,3 +3,4 @@
 *.pem
 dist/
 .dioxus/
+.gstack/

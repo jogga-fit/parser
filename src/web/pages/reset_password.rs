@@ -4,7 +4,7 @@ use crate::web::{
     app::Route,
     components::ErrorBanner,
     pages::otp_password_form::OtpPasswordForm,
-    server_fns::{get_me, otp_verify},
+    server_fns::{get_me, otp_verify, password_reset_init},
     sfn_msg,
     state::{AuthSignal, AuthUser, save_auth},
 };
@@ -106,6 +106,12 @@ pub fn ResetPasswordPage(query: String) -> Element {
     let password = use_signal(String::new);
     let password2 = use_signal(String::new);
 
+    // Re-request state — shown when otp_id is missing or the OTP has expired.
+    let mut rerequest_contact = use_signal(String::new);
+    let mut rerequest_loading = use_signal(|| false);
+    let mut rerequest_sent = use_signal(|| false);
+    let mut rerequest_error = use_signal(|| Option::<String>::None);
+
     let query_for_effect = query.clone();
     use_effect(move || {
         let (id, code, dn) = parse_query(&effective_query(&query_for_effect));
@@ -181,6 +187,28 @@ pub fn ResetPasswordPage(query: String) -> Element {
         });
     };
 
+    // Show re-request form when there's no otp_id (bare /reset-password) or
+    // after the user submits and the OTP is found to be expired/used.
+    let no_code = otp_id.read().is_empty();
+    let show_rerequest = no_code || *invalid_otp.read();
+
+    let on_rerequest = move |_: Event<MouseData>| {
+        let contact = rerequest_contact.read().trim().to_string();
+        if contact.is_empty() {
+            rerequest_error.set(Some("Please enter your email or phone.".into()));
+            return;
+        }
+        rerequest_loading.set(true);
+        rerequest_error.set(None);
+        spawn(async move {
+            match password_reset_init(contact).await {
+                Ok(_) => rerequest_sent.set(true),
+                Err(e) => rerequest_error.set(Some(sfn_msg(&e))),
+            }
+            rerequest_loading.set(false);
+        });
+    };
+
     rsx! {
         div { class: "auth-page",
             div { class: "auth-card",
@@ -188,7 +216,7 @@ pub fn ResetPasswordPage(query: String) -> Element {
                     div { class: "auth-logo", i { class: "ph ph-person-simple-run" } }
                     h1 { "Jogga:" }
                     p { class: "auth-subtitle",
-                        if *invalid_otp.read() { "Code expired" } else { "Set your password" }
+                        if show_rerequest { "Reset your password" } else { "Set your password" }
                     }
                 }
 
@@ -196,11 +224,44 @@ pub fn ResetPasswordPage(query: String) -> Element {
                     ErrorBanner { message: err.clone() }
                 }
 
-                if *invalid_otp.read() {
-                    p { class: "auth-hint",
-                        "This verification link has expired or already been used. \
-                         Please request a new code."
+                if show_rerequest {
+                    if *invalid_otp.read() {
+                        p { class: "auth-hint otp-expired-hint",
+                            "This verification link has expired or has already been used."
+                        }
+                    } else {
+                        p { class: "auth-hint",
+                            "No reset code found. Enter your email or phone to receive a new link."
+                        }
                     }
+
+                    if *rerequest_sent.read() {
+                        p { class: "auth-hint auth-hint-success",
+                            "Reset link sent — check your inbox and follow the link."
+                        }
+                    } else {
+                        if let Some(err) = rerequest_error.read().as_ref() {
+                            ErrorBanner { message: err.clone() }
+                        }
+                        div { class: "auth-field",
+                            label { r#for: "rerequest-contact", "Email or phone" }
+                            input {
+                                id: "rerequest-contact",
+                                r#type: "text",
+                                autocomplete: "email",
+                                placeholder: "you@example.com",
+                                value: "{rerequest_contact}",
+                                oninput: move |e| rerequest_contact.set(e.value()),
+                            }
+                        }
+                        button {
+                            class: "btn btn-primary btn-full",
+                            disabled: *rerequest_loading.read(),
+                            onclick: on_rerequest,
+                            if *rerequest_loading.read() { "Sending…" } else { "Send reset link" }
+                        }
+                    }
+
                     div { class: "auth-footer",
                         Link { to: Route::Login {}, "Back to sign in" }
                     }

@@ -155,6 +155,55 @@ async fn get_me_with_invalid_token_returns_401() {
     resp.assert_status_unauthorized();
 }
 
+// ── ActivityPub actor endpoints ─────────────────────────────────────────────
+//
+// Web UI behaviour (validated via browser against the running binary):
+//
+//   GET /            → SSR-renders the owner's profile page directly.
+//                      Unauthenticated visitors see the owner's public profile;
+//                      authenticated users are redirected client-side to /home.
+//
+//   GET /@<owner>    → Owner's profile page (same content as /).
+//
+//   GET /@<other>    → "DNF — not here" page explaining this is a single-user
+//                      server and the visitor should search on the other server.
+//
+// AP endpoints (tested below) continue to exist alongside the web UI.
+
+#[tokio::test]
+async fn ap_actor_owner_returns_200() {
+    let (_dir, server) = make_server().await;
+
+    let resp = server
+        .get(&format!("/users/{OWNER_USERNAME}"))
+        .add_header(
+            axum::http::header::ACCEPT,
+            "application/activity+json",
+        )
+        .await;
+
+    resp.assert_status_ok();
+    let body: Value = resp.json();
+    assert_eq!(body["type"].as_str(), Some("Person"));
+    assert!(body["id"].is_string(), "expected id field");
+    assert!(body["inbox"].is_string(), "expected inbox field");
+}
+
+#[tokio::test]
+async fn ap_actor_unknown_returns_404() {
+    let (_dir, server) = make_server().await;
+
+    let resp = server
+        .get("/users/nobody_exists_here")
+        .add_header(
+            axum::http::header::ACCEPT,
+            "application/activity+json",
+        )
+        .await;
+
+    resp.assert_status_not_found();
+}
+
 // ── GET /api/v1/accounts/:username ──────────────────────────────────────────
 
 #[tokio::test]

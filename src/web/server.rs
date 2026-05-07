@@ -1,5 +1,7 @@
 use std::{path::Path, sync::OnceLock};
 
+use crate::server::auth::generate_placeholder_password;
+
 pub use activitypub_federation::{
     config::FederationConfig,
     fetch::object_id::ObjectId,
@@ -60,8 +62,8 @@ pub async fn run_server(config_path: Option<&Path>) {
             .fetch_one(&state.db)
             .await
             .unwrap_or(0);
-    if local_count == 0 && !config.owner.username.is_empty() && !config.owner.contact.is_empty() {
-        let initial_password = crate::server::auth::generate_token();
+    if local_count == 0 && !config.owner.username.is_empty() {
+        let initial_password = generate_placeholder_password();
         match crate::server::service::seed_owner(
             &state.db,
             &config.owner.username,
@@ -73,26 +75,38 @@ pub async fn run_server(config_path: Option<&Path>) {
         .await
         {
             Ok(()) => {
-                tracing::warn!(
-                    username = %config.owner.username,
-                    contact = %config.owner.contact,
-                    "First boot: owner account seeded. Sending password-reset OTP."
-                );
-                match crate::server::service::do_password_reset_init(
-                    &state,
-                    &config.owner.contact,
-                )
-                .await
-                {
-                    Ok(_) => tracing::warn!(
+                if config.owner.contact.is_empty() {
+                    // No contact configured — log the generated password so the
+                    // admin can use it to sign in and change it immediately.
+                    tracing::warn!(
+                        username = %config.owner.username,
+                        password = %initial_password,
+                        "First boot: owner account seeded with generated password. \
+                         Sign in and change it immediately."
+                    );
+                } else {
+                    tracing::warn!(
+                        username = %config.owner.username,
                         contact = %config.owner.contact,
-                        "First boot: password-reset OTP sent. Follow the link to set your password."
-                    ),
-                    Err(e) => tracing::warn!(
-                        error = %e,
-                        contact = %config.owner.contact,
-                        "First boot: OTP delivery failed. Use forgot-password on the web UI to set your password."
-                    ),
+                        "First boot: owner account seeded. Sending password-reset OTP."
+                    );
+                    match crate::server::service::do_password_reset_init(
+                        &state,
+                        &config.owner.contact,
+                    )
+                    .await
+                    {
+                        Ok(_) => tracing::warn!(
+                            contact = %config.owner.contact,
+                            "First boot: password-reset OTP sent. Follow the link to set your password."
+                        ),
+                        Err(e) => tracing::warn!(
+                            error = %e,
+                            contact = %config.owner.contact,
+                            password = %initial_password,
+                            "First boot: OTP delivery failed. Use the generated password above to sign in."
+                        ),
+                    }
                 }
             }
             Err(e) => tracing::warn!(error = %e, "Auto-seed skipped"),

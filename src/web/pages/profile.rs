@@ -754,19 +754,19 @@ fn NotFound(username: String) -> Element {
                     span { class: "nf-arrow", "←" }
                     i { class: "ph ph-flag-checkered nf-flag" }
                 }
-                p { class: "nf-label", "did not find" }
+                p { class: "nf-label", "not here" }
                 h1 { class: "nf-title", "DNF" }
                 p { class: "nf-handle", "@{username}" }
-                p { class: "nf-desc", "This athlete isn't on this instance." }
+                p { class: "nf-desc", "This is a single-user server." }
                 p { class: "nf-hint",
-                    "Following someone from another server? Try "
-                    code { "@{username}@theirdomain" }
-                    " in the Follow box."
+                    "You're looking for someone on a different server. Search for "
+                    code { "@{username}" }
+                    " there."
                 }
                 button {
                     class: "btn btn-primary",
-                    onclick: move |_| { nav.push(Route::Home {}); },
-                    "Back to feed"
+                    onclick: move |_| { nav.push(Route::Index {}); },
+                    "Go to home"
                 }
             }
         }
