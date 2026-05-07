@@ -9,9 +9,9 @@ target/
 .claude/
 .cargo/
 
-# Local config and secrets
-*.toml
-!example.config.toml
+# Runtime config (secrets — never needed in Docker build context)
+config.toml
+*.config.toml
 .env
 .env.*
 
