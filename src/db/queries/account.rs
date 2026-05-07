@@ -8,6 +8,9 @@ pub struct AccountQueries;
 impl AccountQueries {
     /// Insert a new local account row.  Call after creating the actor.
     /// Caller is responsible for generating the `id` UUID (use `Uuid::new_v4()`).
+    ///
+    /// `api_token` is the raw token returned to the user; this function stores
+    /// the SHA-256 hash of the token in the DB (C3: tokens at rest are hashed).
     #[must_use = "Result must be checked"]
     #[allow(clippy::too_many_arguments)]
     pub async fn create(
@@ -21,6 +24,7 @@ impl AccountQueries {
         email_verified: bool,
         phone_verified: bool,
     ) -> Result<LocalAccount, DbError> {
+        let token_hash = crate::server::auth::hash_token(api_token);
         sqlx::query_as!(
             LocalAccount,
             r#"INSERT INTO local_accounts
@@ -39,7 +43,7 @@ impl AccountQueries {
             id,
             actor_id,
             password_hash,
-            api_token,
+            token_hash,
             email,
             phone,
             email_verified,
@@ -50,9 +54,14 @@ impl AccountQueries {
         .map_err(|e| DbError::from_sqlx(e, "account already exists"))
     }
 
-    /// Look up an account by its bearer token.
+    /// Look up an account by its raw bearer token.
+    ///
+    /// The token is hashed with SHA-256 before the DB lookup — the DB stores
+    /// only the hash (C3).  Callers always pass the raw token as received from
+    /// the client.
     #[must_use = "Result must be checked"]
     pub async fn find_by_token(pool: &SqlitePool, token: &str) -> Result<LocalAccount, DbError> {
+        let token_hash = crate::server::auth::hash_token(token);
         sqlx::query_as!(
             LocalAccount,
             r#"SELECT id        AS "id: Uuid",
@@ -66,7 +75,7 @@ impl AccountQueries {
                       created_at AS "created_at: chrono::DateTime<chrono::Utc>"
                FROM local_accounts
                WHERE api_token = ?"#,
-            token,
+            token_hash,
         )
         .fetch_optional(pool)
         .await?
@@ -175,6 +184,9 @@ impl AccountQueries {
 
     /// Replace the password hash and rotate the bearer token atomically.
     /// Rotating the token invalidates all existing sessions.
+    ///
+    /// `new_token` is the raw token returned to the user; its SHA-256 hash is
+    /// what gets written to the DB (C3).
     #[must_use = "Result must be checked"]
     pub async fn update_password(
         pool: &SqlitePool,
@@ -182,11 +194,32 @@ impl AccountQueries {
         new_hash: &str,
         new_token: &str,
     ) -> Result<(), DbError> {
+        let token_hash = crate::server::auth::hash_token(new_token);
         sqlx::query!(
             "UPDATE local_accounts SET password_hash = ?2, api_token = ?3 WHERE id = ?1",
             account_id,
             new_hash,
-            new_token,
+            token_hash,
+        )
+        .execute(pool)
+        .await?;
+        Ok(())
+    }
+
+    /// Replace only the bearer token. Accepts the raw token; stores its
+    /// SHA-256 hash in the DB (C3). Used by `do_login` to rotate the token
+    /// on every successful login.
+    #[must_use = "Result must be checked"]
+    pub async fn update_token(
+        pool: &SqlitePool,
+        account_id: Uuid,
+        raw_token: &str,
+    ) -> Result<(), DbError> {
+        let token_hash = crate::server::auth::hash_token(raw_token);
+        sqlx::query!(
+            "UPDATE local_accounts SET api_token = ?2 WHERE id = ?1",
+            account_id,
+            token_hash,
         )
         .execute(pool)
         .await?;

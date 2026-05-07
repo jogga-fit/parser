@@ -47,8 +47,13 @@ pub async fn do_login(state: &AppState, login: &str, password: &str) -> Result<S
         return Err(AppError::Unauthorized);
     }
 
+    // Rotate token on every login: generate a fresh raw token, store its SHA-256
+    // hash in the DB (C3), and return the raw token to the caller.
+    let new_token = generate_token();
+    AccountQueries::update_token(&state.db, account.id, &new_token).await?;
+
     info!(username = actor.username, "login successful");
-    Ok(account.api_token)
+    Ok(new_token)
 }
 
 /// Issue a password-reset OTP. For jogga: uses the owner contact from config.
@@ -66,20 +71,21 @@ pub async fn do_password_reset_init(
         (contact.to_string(), "phone", ContactType::Phone)
     };
 
-    // Silently ignore whether account exists — always return 202 to prevent contact enumeration.
+    // Always generate+hash OTP to equalize timing regardless of whether the account
+    // exists — prevents timing oracles that leak contact registration status (C7).
+    let code = generate_otp();
+    let hash = hash_otp(&code)?;
+    let expires = Utc::now() + chrono::Duration::minutes(15);
+
     let account_found = match contact_type {
         ContactType::Email => AccountQueries::find_by_email(&state.db, &normalised).await.is_ok(),
         ContactType::Phone => AccountQueries::find_by_phone(&state.db, &normalised).await.is_ok(),
     };
 
     if !account_found {
-        debug!(contact_type = contact_type_str, "password-reset requested for unknown contact — returning dummy 202");
+        debug!(contact_type = contact_type_str, "password-reset for unknown contact — hash generated, not stored");
         return Ok((Uuid::nil(), None));
     }
-
-    let code = generate_otp();
-    let hash = hash_otp(&code)?;
-    let expires = Utc::now() + chrono::Duration::minutes(15);
 
     let otp = OtpQueries::insert(
         &state.db,

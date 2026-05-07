@@ -126,6 +126,18 @@ pub fn generate_token() -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+/// SHA-256 hex digest of a token.
+///
+/// Tokens are generated as random hex strings and stored only as their SHA-256
+/// hash in the DB (column `api_token`).  On lookup the caller hashes the raw
+/// token and compares hashes — never storing the plaintext (C3).
+pub fn hash_token(token: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    hasher.update(token.as_bytes());
+    format!("{:x}", hasher.finalize())
+}
+
 /// Validate a username against `^[a-zA-Z0-9_]{1,30}$`.
 pub fn validate_username(username: &str) -> Result<(), AppError> {
     if username.is_empty() || username.len() > 30 {
