@@ -83,8 +83,7 @@ pub async fn delete_me(
     data: Data<AppState>,
     AuthenticatedUser { actor, .. }: AuthenticatedUser,
 ) -> Result<impl IntoResponse, AppError> {
-    ActorQueries::delete(&data.db, actor.id).await?;
-    info!(username = actor.username, "account deleted");
+    crate::server::service::social::do_delete_account(&data, &actor).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

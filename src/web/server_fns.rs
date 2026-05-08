@@ -719,15 +719,15 @@ pub async fn set_privacy_settings(
 #[server]
 pub async fn delete_account(token: String) -> Result<(), ServerFnError> {
     use crate::web::server::*;
-    let _rd = request_data();
-    let state = _rd.app_data();
+    let rd = request_data();
+    let state = rd.app_data();
     let account = AccountQueries::find_by_token(&state.db, &token)
         .await
         .map_err(|_| ServerFnError::new("invalid token"))?;
     let actor = ActorQueries::find_by_id(&state.db, account.actor_id)
         .await
         .map_err(|_| ServerFnError::new("actor not found"))?;
-    ActorQueries::delete(&state.db, actor.id)
+    crate::server::service::social::do_delete_account(&rd, &actor)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))
 }

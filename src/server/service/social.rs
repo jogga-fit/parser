@@ -11,7 +11,7 @@ use crate::db::queries::{
 use crate::server::{
     error::AppError,
     impls::actor::DbActor,
-    protocol::{follow::Follow, undo::Undo},
+    protocol::{delete::{Delete, DeleteObject}, follow::Follow, undo::Undo},
     state::AppState,
 };
 
@@ -358,5 +358,85 @@ pub async fn do_move_account(
     }
 
     info!(actor_id = %actor.id, new_id = %new_ap_id, "account moved");
+    Ok(())
+}
+
+/// Broadcast a `Delete` activity for the actor to all followers, send
+/// `Undo Follow` to every following target, then delete the DB row.
+#[tracing::instrument(skip(data), fields(actor_id = %actor.id))]
+pub async fn do_delete_account(
+    data: &Data<AppState>,
+    actor: &crate::db::models::ActorRow,
+) -> Result<(), AppError> {
+    let scheme = data.app_data().config.instance.scheme();
+    let domain = data.domain();
+
+    let local_actor = fetch_local_actor(data, actor.id).await?;
+    let actor_url = local_actor.ap_url();
+
+    // ── Undo Follow for every outbound follow ──────────────────────────────
+    let following = FollowQueries::list_following_inbox_urls(&data.db, actor.id)
+        .await
+        .unwrap_or_default();
+
+    for (target_ap_id, inbox_str) in &following {
+        let Ok(inbox) = inbox_str.parse::<url::Url>() else { continue };
+        let Ok(target_url) = target_ap_id.parse::<url::Url>() else { continue };
+
+        let follow_id = format!("{scheme}://{domain}/activities/{}", Uuid::now_v7())
+            .parse::<url::Url>()
+            .map_err(AppError::from)?;
+        let undo_id = format!("{scheme}://{domain}/activities/{}", Uuid::now_v7())
+            .parse::<url::Url>()
+            .map_err(AppError::from)?;
+
+        let follow = Follow::new(
+            ObjectId::from(actor_url.clone()),
+            ObjectId::from(target_url),
+            follow_id,
+        );
+        let undo = Undo {
+            kind: activitypub_federation::kinds::activity::UndoType::Undo,
+            id: undo_id,
+            actor: ObjectId::from(actor_url.clone()),
+            object: follow,
+        };
+
+        if let Err(e) = local_actor.send(undo, vec![inbox], data).await {
+            warn!(target = target_ap_id, err = %e, "delete: Undo Follow delivery failed");
+        }
+    }
+
+    // ── Delete activity → all followers ───────────────────────────────────
+    let follower_inboxes = FollowQueries::list_follower_inbox_urls(&data.db, actor.id)
+        .await
+        .unwrap_or_default();
+
+    let inbox_urls: Vec<url::Url> = follower_inboxes
+        .iter()
+        .filter_map(|s| s.parse().ok())
+        .collect();
+
+    if !inbox_urls.is_empty() {
+        let delete_id = format!("{scheme}://{domain}/activities/{}", Uuid::now_v7())
+            .parse::<url::Url>()
+            .map_err(AppError::from)?;
+
+        let delete = Delete {
+            kind: activitypub_federation::kinds::activity::DeleteType::Delete,
+            id: delete_id,
+            actor: actor_url.clone(),
+            object: DeleteObject::Url(actor_url),
+        };
+
+        if let Err(e) = local_actor.send(delete, inbox_urls, data).await {
+            warn!(err = %e, "delete: Delete activity delivery failed");
+        }
+    }
+
+    // ── Remove DB row ─────────────────────────────────────────────────────
+    ActorQueries::delete(&data.db, actor.id).await?;
+
+    info!(actor_id = %actor.id, "account deleted with federation cleanup");
     Ok(())
 }

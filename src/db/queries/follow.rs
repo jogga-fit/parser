@@ -461,6 +461,24 @@ impl FollowQueries {
             .collect()
     }
 
+    /// List inbox URLs of all actors `actor_id` is following (any type, accepted only).
+    #[must_use = "Result must be checked"]
+    pub async fn list_following_inbox_urls(
+        pool: &SqlitePool,
+        actor_id: Uuid,
+    ) -> Result<Vec<(String, String)>, DbError> {
+        let rows = sqlx::query_as::<_, (String, String)>(
+            r#"SELECT a.ap_id, COALESCE(a.shared_inbox_url, a.inbox_url)
+               FROM following f
+               JOIN actors a ON a.id = f.target_id
+               WHERE f.actor_id = ? AND f.accepted = 1 AND a.is_local = 0"#,
+        )
+        .bind(actor_id)
+        .fetch_all(pool)
+        .await?;
+        Ok(rows)
+    }
+
     /// List Group-type actors the owner is following (their joined clubs).
     #[must_use = "Result must be checked"]
     pub async fn list_joined_clubs(
