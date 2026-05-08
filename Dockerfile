@@ -8,7 +8,9 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Dedicated stage: compile dioxus-cli from source so it matches the builder's glibc.
 # This layer is cached until the version changes.
 FROM chef AS dx-builder
-RUN cargo install dioxus-cli --version "0.7.7" --locked
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    cargo install dioxus-cli --version "0.7.7" --locked
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
@@ -29,7 +31,7 @@ COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/app/target \
-    dx build --release --package jogga --features=wasm-split --wasm-split && \
+    dx build --release --package jogga && \
     cp -r /app/target/dx/jogga/release/web /app/web
 
 FROM debian:bookworm-slim
