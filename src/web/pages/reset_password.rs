@@ -4,7 +4,7 @@ use crate::web::{
     app::Route,
     components::ErrorBanner,
     pages::otp_password_form::OtpPasswordForm,
-    server_fns::{get_me, otp_verify, password_reset_init},
+    server_fns::{get_me, get_owner_username, otp_verify, password_reset_init},
     sfn_msg,
     state::{AuthSignal, AuthUser, save_auth},
 };
@@ -92,6 +92,7 @@ fn browser_query() -> String {
 pub fn ResetPasswordPage(query: String) -> Element {
     let mut auth = use_context::<AuthSignal>();
     let nav = use_navigator();
+    let owner = use_resource(|| async { get_owner_username().await.ok() });
 
     let (initial_otp_id, initial_pre_otp, initial_display_name) =
         parse_query(&effective_query(&query));
@@ -215,6 +216,11 @@ pub fn ResetPasswordPage(query: String) -> Element {
                 div { class: "auth-header",
                     div { class: "auth-logo", i { class: "ph ph-person-simple-run" } }
                     h1 { "Jogga:" }
+                    if let Some(Some(u)) = owner.read().as_ref() {
+                        p { class: "auth-instance", "Dedicated server for "
+                            code { "@{u}" }
+                        }
+                    }
                     p { class: "auth-subtitle",
                         if show_rerequest { "Reset your password" } else { "Set your password" }
                     }

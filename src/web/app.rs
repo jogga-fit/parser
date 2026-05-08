@@ -300,6 +300,7 @@ fn UserProfile(username: String) -> Element {
 #[component]
 fn PageNotFound(segments: Vec<String>) -> Element {
     let nav = use_navigator();
+    let owner = use_resource(|| async { get_owner_username().await.ok() });
     rsx! {
         div { class: "not-found-page",
             div { class: "not-found-blob-wrap",
@@ -315,6 +316,12 @@ fn PageNotFound(segments: Vec<String>) -> Element {
                 p { class: "nf-label", "did not qualify" }
                 h1 { class: "nf-title", "DNQ" }
                 p { class: "nf-desc", "We don't know what you are looking for." }
+                if let Some(Some(u)) = owner.read().as_ref() {
+                    p { class: "nf-hint", "This is a dedicated server for "
+                        code { "@{u}" }
+                        "."
+                    }
+                }
                 button {
                     class: "btn btn-primary",
                     onclick: move |_| { nav.push(Route::Index {}); },
