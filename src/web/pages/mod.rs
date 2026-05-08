@@ -1,4 +1,5 @@
 pub mod clubs;
+pub mod credits;
 pub mod feed_card;
 pub mod home;
 pub mod login;

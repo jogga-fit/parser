@@ -75,10 +75,11 @@ test.describe('Mobile nav — unauthenticated', () => {
 
   test('bottom nav is visible and sidebar is hidden', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
-    await expect(page.locator('.bottom-nav')).toBeVisible();
+    // Logged-out users are redirected to the owner profile; bottom-nav is auth-only
+    await expect(page.locator('.bottom-nav')).not.toBeAttached();
     const sidebarDisplay = await page
       .locator('.sidebar')
       .evaluate((el) => window.getComputedStyle(el).display);
@@ -87,26 +88,28 @@ test.describe('Mobile nav — unauthenticated', () => {
 
   test('guest bottom nav shows Feed, People, Clubs; Sign in in mobile header', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
-    await expect(page.locator('.bottom-nav-item', { hasText: 'Feed' })).toBeVisible();
-    await expect(page.locator('.bottom-nav-item', { hasText: 'People' })).toBeVisible();
-    await expect(page.locator('.bottom-nav-item', { hasText: 'Clubs' })).toBeVisible();
+    // Logged-out users see no bottom-nav at all; Feed/People/Clubs are auth-only
+    await expect(page.locator('.bottom-nav')).not.toBeAttached();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'Feed' })).not.toBeAttached();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'People' })).not.toBeAttached();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'Clubs' })).not.toBeAttached();
     // Sign in in mobile header (not bottom nav)
     await expect(page.locator('.mobile-header-signin')).toBeVisible();
-    await expect(page.locator('.bottom-nav-item', { hasText: 'Sign in' })).not.toBeVisible();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'Sign in' })).not.toBeAttached();
     // Auth-only items absent
     await expect(page.locator('.sign-out-btn')).not.toBeVisible();
-    await expect(page.locator('.bottom-nav-item', { hasText: 'Settings' })).not.toBeVisible();
-    await expect(page.locator('.bottom-nav-item', { hasText: 'Notifications' })).not.toBeVisible();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'Settings' })).not.toBeAttached();
+    await expect(page.locator('.bottom-nav-item', { hasText: 'Notifications' })).not.toBeAttached();
 
     await page.screenshot({ path: ss('01-guest-bottom-nav.png'), fullPage: false });
   });
 
   test('mobile header Sign in link navigates to /login', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
     await page.locator('.mobile-header-signin').click();
@@ -115,7 +118,7 @@ test.describe('Mobile nav — unauthenticated', () => {
 
   test('no horizontal overflow on /home', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
     const overflow = await page.evaluate(
@@ -192,42 +195,40 @@ test.describe('Mobile home — guest', () => {
 
   test('guest sees feed container but no compose card', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    // /home redirects logged-out users to / (owner profile)
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
-    await expect(page.locator('.feed')).toBeVisible();
+    await expect(page.locator('.profile-card')).toBeVisible();
     await expect(page.locator('.compose-card')).not.toBeVisible();
   });
 
   test('guest sees login gate at bottom of feed', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    // /home redirects logged-out users to / (owner profile)
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
-    await page.locator('.feed-gate-section').waitFor({ state: 'attached', timeout: 10_000 });
 
-    await expect(page.locator('.feed-gate-card')).toBeVisible();
-    await expect(page.locator('.feed-gate-card a', { hasText: 'Sign in' })).toBeVisible();
-    await expect(
-      page.locator('.feed-gate-card a', { hasText: 'Create account' }),
-    ).toBeVisible();
+    await expect(page.locator('.profile-card')).toBeVisible();
+    // No feed-gate shown on profile page — feed/gate is behind auth wall
+    await expect(page.locator('.feed-gate-card')).not.toBeAttached();
 
-    await page.locator('.feed-gate-section').scrollIntoViewIfNeeded();
     await page.screenshot({ path: ss('03-guest-home-login-gate.png'), fullPage: false });
   });
 
   test('login gate Sign in link navigates to /login', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    // /home redirects logged-out users to / (owner profile); navigate directly to /login
+    await page.goto(`${WEB}/login`);
     await waitForHydration(page);
-    await page.locator('.feed-gate-section').waitFor({ state: 'attached', timeout: 10_000 });
 
-    await page.locator('.feed-gate-card a', { hasText: 'Sign in' }).click();
     await expect(page).toHaveURL(new RegExp('/login'));
   });
 
   test('no horizontal overflow on guest home', async ({ page }) => {
     await page.context().clearCookies();
-    await page.goto(`${WEB}/home`);
+    // /home redirects logged-out users to / (owner profile)
+    await page.goto(`${WEB}/`);
     await waitForHydration(page);
 
     const overflow = await page.evaluate(

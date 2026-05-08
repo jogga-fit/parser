@@ -7,6 +7,7 @@ use crate::web::{
     hooks::use_client_only,
     pages::{
         clubs::{ClubPage, ClubsPage},
+        credits::CreditsPage,
         home::HomePage,
         login::LoginPage,
         people::PeoplePage,
@@ -56,6 +57,8 @@ pub enum Route {
         username: String,
         exercise_id: String,
     },
+    #[route("/credits")]
+    Credits {},
     // Must be last — catch-all for /@username profile pages.
     // Dioxus router can't parse a literal @ prefix in a dynamic segment,
     // so we use /:username and validate the @ in the component.
@@ -200,6 +203,17 @@ fn ResetPassword(query: String) -> Element {
 
 #[component]
 fn Home() -> Element {
+    let auth = use_context::<AuthSignal>();
+    let nav = use_navigator();
+    let ready = use_client_only();
+    use_effect(move || {
+        if *ready.read() && auth.read().is_none() {
+            nav.push(Route::Index {});
+        }
+    });
+    if !*ready.read() {
+        return rsx! { div { class: "loading", "Loading…" } };
+    }
     rsx! { HomePage {} }
 }
 
@@ -221,7 +235,14 @@ fn Profile() -> Element {
 
 #[component]
 fn People() -> Element {
+    let auth = use_context::<AuthSignal>();
+    let nav = use_navigator();
     let ready = use_client_only();
+    use_effect(move || {
+        if *ready.read() && auth.read().is_none() {
+            nav.push(Route::Index {});
+        }
+    });
     if !*ready.read() {
         return rsx! { div { class: "loading", "Loading…" } };
     }
@@ -230,7 +251,14 @@ fn People() -> Element {
 
 #[component]
 fn Clubs() -> Element {
+    let auth = use_context::<AuthSignal>();
+    let nav = use_navigator();
     let ready = use_client_only();
+    use_effect(move || {
+        if *ready.read() && auth.read().is_none() {
+            nav.push(Route::Index {});
+        }
+    });
     if !*ready.read() {
         return rsx! { div { class: "loading", "Loading…" } };
     }
@@ -239,7 +267,14 @@ fn Clubs() -> Element {
 
 #[component]
 fn ClubDetail(handle: String) -> Element {
+    let auth = use_context::<AuthSignal>();
+    let nav = use_navigator();
     let ready = use_client_only();
+    use_effect(move || {
+        if *ready.read() && auth.read().is_none() {
+            nav.push(Route::Index {});
+        }
+    });
     if !*ready.read() {
         return rsx! { div { class: "loading", "Loading…" } };
     }
@@ -333,6 +368,11 @@ fn PageNotFound(segments: Vec<String>) -> Element {
 }
 
 #[component]
+fn Credits() -> Element {
+    rsx! { CreditsPage {} }
+}
+
+#[component]
 pub fn AppShell(children: Element) -> Element {
     let mut auth = use_context::<AuthSignal>();
     let mut migration_modal = use_context::<MigrationModalSignal>();
@@ -405,17 +445,19 @@ pub fn AppShell(children: Element) -> Element {
                     span { class: "brand-name", "Jogga:" }
                 }
 
-                Link { class: "nav-item", active_class: "active", to: Route::Home {},
-                    i { class: "ph ph-house nav-icon" }
-                    span { class: "nav-label", "Feed" }
-                }
-                Link { class: "nav-item", active_class: "active", to: Route::People {},
-                    i { class: "ph ph-users nav-icon" }
-                    span { class: "nav-label", "People" }
-                }
-                Link { class: "nav-item", active_class: "active", to: Route::Clubs {},
-                    i { class: "ph ph-users-three nav-icon" }
-                    span { class: "nav-label", "Clubs" }
+                if is_authed {
+                    Link { class: "nav-item", active_class: "active", to: Route::Home {},
+                        i { class: "ph ph-house nav-icon" }
+                        span { class: "nav-label", "Feed" }
+                    }
+                    Link { class: "nav-item", active_class: "active", to: Route::People {},
+                        i { class: "ph ph-users nav-icon" }
+                        span { class: "nav-label", "People" }
+                    }
+                    Link { class: "nav-item", active_class: "active", to: Route::Clubs {},
+                        i { class: "ph ph-users-three nav-icon" }
+                        span { class: "nav-label", "Clubs" }
+                    }
                 }
 
                 if is_authed {
@@ -568,20 +610,24 @@ pub fn AppShell(children: Element) -> Element {
                 }
             }
 
-            nav { class: "bottom-nav",
-                Link { class: "bottom-nav-item", active_class: "active", to: Route::Home {},
-                    i { class: "ph ph-house nav-icon" }
-                    span { class: "nav-label", "Feed" }
-                }
-                Link { class: "bottom-nav-item", active_class: "active", to: Route::People {},
-                    i { class: "ph ph-users nav-icon" }
-                    span { class: "nav-label", "People" }
-                }
-                Link { class: "bottom-nav-item", active_class: "active", to: Route::Clubs {},
-                    i { class: "ph ph-users-three nav-icon" }
-                    span { class: "nav-label", "Clubs" }
+            if is_authed {
+                nav { class: "bottom-nav",
+                    Link { class: "bottom-nav-item", active_class: "active", to: Route::Home {},
+                        i { class: "ph ph-house nav-icon" }
+                        span { class: "nav-label", "Feed" }
+                    }
+                    Link { class: "bottom-nav-item", active_class: "active", to: Route::People {},
+                        i { class: "ph ph-users nav-icon" }
+                        span { class: "nav-label", "People" }
+                    }
+                    Link { class: "bottom-nav-item", active_class: "active", to: Route::Clubs {},
+                        i { class: "ph ph-users-three nav-icon" }
+                        span { class: "nav-label", "Clubs" }
+                    }
                 }
             }
+
+            FediverseBadge {}
         }
 
         // Migration modal — rendered outside the grid so the fixed backdrop
@@ -591,6 +637,19 @@ pub fn AppShell(children: Element) -> Element {
                 profile,
                 on_close: move |_| migration_modal.set(None),
             }
+        }
+    }
+}
+
+#[component]
+fn FediverseBadge() -> Element {
+    rsx! {
+        a {
+            class: "fediverse-badge",
+            href: "https://github.com/jogga-fit/core",
+            target: "_blank",
+            rel: "noopener noreferrer",
+            "Built with ❤️ on the fediverse"
         }
     }
 }
