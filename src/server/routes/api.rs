@@ -4,7 +4,12 @@
 //! Password reset: owner's contact is from config or stored account contact.
 
 use activitypub_federation::config::Data;
-use axum::{Json, extract::{Multipart, Query}, http::StatusCode, response::IntoResponse};
+use axum::{
+    Json,
+    extract::{Multipart, Query},
+    http::StatusCode,
+    response::IntoResponse,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::info;
@@ -248,7 +253,12 @@ pub async fn unfollow(
     auth: AuthenticatedUser,
     Json(req): Json<UnfollowRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    crate::server::service::do_unfollow(&data, auth.actor.id, &req.target).await?;
+    let ap_id = if req.target.starts_with('@') {
+        crate::server::service::resolve_handle(data.app_data(), &req.target).await?
+    } else {
+        req.target
+    };
+    crate::server::service::do_unfollow(&data, auth.actor.id, &ap_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
