@@ -100,13 +100,17 @@ pub async fn do_password_reset_init(
 
     info!(contact_type = contact_type_str, otp_id = %otp.id, "password-reset OTP issued");
 
+    let scheme = state.config.instance.scheme();
+    let domain = &state.config.instance.domain;
+    let magic_link = format!("{scheme}://{domain}/reset-password?code={}.{code}", otp.id);
+
     let dev_code = if cfg!(debug_assertions) {
         warn!(otp_id = %otp.id, "debug build — returning OTP in response");
         Some(code)
     } else {
         state
             .notifier
-            .send(&normalised, contact_type, "password_reset", &code)
+            .send(&normalised, contact_type, "password_reset", &code, Some(&magic_link))
             .await
             .inspect_err(|e| warn!(error = %e, "OTP delivery failed"))?;
         None
@@ -243,13 +247,17 @@ pub async fn do_register_init(
         "registration OTP issued"
     );
 
+    let scheme = state.config.instance.scheme();
+    let domain = &state.config.instance.domain;
+    let magic_link = format!("{scheme}://{domain}/reset-password?code={}.{code}", otp.id);
+
     let dev_code = if cfg!(debug_assertions) {
         warn!(otp_id = %otp.id, "debug build — returning OTP in response");
         Some(code)
     } else {
         state
             .notifier
-            .send(&contact, contact_type, "registration", &code)
+            .send(&contact, contact_type, "registration", &code, Some(&magic_link))
             .await
             .inspect_err(|e| warn!(error = %e, "OTP delivery failed"))?;
         None
