@@ -3365,6 +3365,7 @@ dependencies = [
  "enum_delegate",
  "futures-channel",
  "gloo-timers",
+ "hmac",
  "http 1.4.0",
  "js-sys",
  "lettre",

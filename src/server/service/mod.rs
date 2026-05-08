@@ -12,6 +12,7 @@ pub mod auth;
 pub mod exercise;
 pub mod interaction;
 pub mod social;
+pub mod storage;
 
 // ── Re-exports (preserve the original flat `service::*` public API) ───────────
 

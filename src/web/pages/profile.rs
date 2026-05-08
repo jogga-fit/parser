@@ -1,3 +1,4 @@
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use dioxus::prelude::*;
 
 use super::feed_card::FeedCard;
@@ -12,7 +13,7 @@ use crate::web::{
     },
     server_fns::{
         check_following, follow_person, get_actor_connections, get_actor_info, get_actor_posts,
-        unfollow_actor, update_profile,
+        unfollow_actor, update_profile, upload_avatar_fn,
     },
     sfn_msg, sleep_ms,
     state::AuthSignal,
@@ -213,11 +214,13 @@ fn ProfileCard(actor: ActorInfo, is_own: bool, is_logged_in: bool) -> Element {
         spawn(async move {
             photo_error.set(None);
             match compress_avatar_from_input("avatar-file-input", crop).await {
-                Ok(_image) => {
-                    photo_error.set(Some(
-                        "Avatar upload not supported on this instance".to_string(),
-                    ));
-                }
+                Ok(image) => match STANDARD.decode(&image.b64) {
+                    Ok(bytes) => match upload_avatar_fn(_t.clone(), bytes).await {
+                        Ok(url) => avatar_url.set(Some(url)),
+                        Err(e) => photo_error.set(Some(sfn_msg(&e))),
+                    },
+                    Err(_) => photo_error.set(Some("Image encode failed".to_string())),
+                },
                 Err(err) => photo_error.set(Some(err)),
             }
             if let Some(current) = crop_modal.take() {

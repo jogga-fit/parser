@@ -263,6 +263,7 @@ fn IntegrationCard(integration: Integration) -> Element {
 #[component]
 fn DangerZoneSection(username: String) -> Element {
     let mut auth = use_context::<AuthSignal>();
+    let mut theme = use_context::<ThemeSignal>();
     let nav = use_navigator();
     let token = auth
         .read()
@@ -284,6 +285,8 @@ fn DangerZoneSection(username: String) -> Element {
                 Ok(()) => {
                     clear_auth();
                     auth.set(None);
+                    save_theme("system");
+                    theme.set("system".to_string());
                     nav.push(Route::Login {});
                 }
                 Err(e) => {

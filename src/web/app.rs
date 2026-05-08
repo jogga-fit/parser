@@ -375,6 +375,7 @@ fn Credits() -> Element {
 #[component]
 pub fn AppShell(children: Element) -> Element {
     let mut auth = use_context::<AuthSignal>();
+    let mut theme = use_context::<ThemeSignal>();
     let mut migration_modal = use_context::<MigrationModalSignal>();
     let ready = use_client_only();
     let nav = use_navigator();
@@ -480,6 +481,8 @@ pub fn AppShell(children: Element) -> Element {
                         onclick: move |_| {
                             clear_auth();
                             auth.set(None);
+                            save_theme("system");
+                            theme.set("system".to_string());
                             nav.push(Route::Login {});
                         },
                         i { class: "ph ph-sign-out nav-icon" }
@@ -601,6 +604,8 @@ pub fn AppShell(children: Element) -> Element {
                                 acct_open.set(false);
                                 clear_auth();
                                 auth.set(None);
+                                save_theme("system");
+                                theme.set("system".to_string());
                                 nav.push(Route::Login {});
                             },
                             i { class: "ph ph-sign-out" }

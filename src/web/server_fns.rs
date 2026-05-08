@@ -1005,6 +1005,34 @@ pub async fn update_profile(
     .map_err(|e| ServerFnError::new(e.to_string()))
 }
 
+/// Upload a compressed avatar image and update the actor's avatar URL.
+#[server]
+pub async fn upload_avatar_fn(
+    token: String,
+    image_bytes: Vec<u8>,
+) -> Result<String, ServerFnError> {
+    use crate::web::server::*;
+    let _rd = request_data();
+    let state = _rd.app_data();
+    let account = AccountQueries::find_by_token(&state.db, &token)
+        .await
+        .map_err(|_| ServerFnError::new("invalid token"))?;
+    let storage = state.config.storage.as_ref().ok_or_else(|| {
+        ServerFnError::new("Avatar upload not supported on this instance")
+    })?;
+    let actor = ActorQueries::find_by_id(&state.db, account.actor_id)
+        .await
+        .map_err(|_| ServerFnError::new("actor not found"))?;
+    let key = format!("avatars/{}.jpg", actor.id);
+    let url = crate::server::service::storage::upload_bytes(storage, &key, &image_bytes, "image/jpeg")
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+    ActorQueries::update_avatar_url(&state.db, actor.id, &url)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+    Ok(url)
+}
+
 /// Upload an exercise file (GPX or FIT) from the compose UI.
 ///
 /// `file_bytes` is the raw file content (not base64 — server functions transfer
