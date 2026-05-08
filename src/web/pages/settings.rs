@@ -7,7 +7,7 @@ use crate::web::{
     hooks::{is_auth_error, use_auth_guard},
     server_fns::{
         add_alias, delete_account, get_me, move_account, remove_alias, set_privacy_settings,
-        set_theme, update_profile,
+        set_theme,
     },
     sfn_msg,
     state::{AuthSignal, ThemeSignal, clear_auth, save_theme},
@@ -38,7 +38,6 @@ pub fn SettingsPage() -> Element {
                     None => rsx! { div { class: "loading-spinner", "Loading…" } },
                     Some(Err(_)) => rsx! { ErrorBanner { message: "Could not load settings. Please try again.".to_string() } },
                     Some(Ok(profile)) => rsx! {
-                        ProfileSection { profile: profile.clone() }
                         AppearanceSection { profile: profile.clone() }
                         PrivacySection { profile: profile.clone() }
                         IntegrationsSection {}
@@ -47,92 +46,6 @@ pub fn SettingsPage() -> Element {
                         DangerZoneSection { username: profile.username.clone() }
                     },
                 }
-            }
-        }
-    }
-}
-
-#[component]
-fn ProfileSection(profile: MeResult) -> Element {
-    let auth = use_context::<AuthSignal>();
-    let token = auth
-        .read()
-        .as_ref()
-        .map(|u| u.token.clone())
-        .unwrap_or_default();
-
-    let mut display_name = use_signal(|| profile.display_name.clone().unwrap_or_default());
-    let mut bio = use_signal(|| profile.bio.clone().unwrap_or_default());
-    let mut saving = use_signal(|| false);
-    let mut error = use_signal(|| Option::<String>::None);
-    let mut saved = use_signal(|| false);
-
-    let on_save = {
-        let tok = token.clone();
-        move |_: Event<MouseData>| {
-            let t = tok.clone();
-            let dn = display_name.read().trim().to_string();
-            let b = bio.read().trim().to_string();
-            saving.set(true);
-            error.set(None);
-            saved.set(false);
-            spawn(async move {
-                match update_profile(
-                    t,
-                    if dn.is_empty() { None } else { Some(dn) },
-                    if b.is_empty() { None } else { Some(b) },
-                )
-                .await
-                {
-                    Ok(()) => saved.set(true),
-                    Err(e) => error.set(Some(sfn_msg(&e))),
-                }
-                saving.set(false);
-            });
-        }
-    };
-
-    rsx! {
-        section { class: "settings-section",
-            h2 { class: "settings-section-title", "Profile" }
-            p { class: "settings-section-desc", "How you appear to others on the network." }
-
-            div { class: "settings-field",
-                label { class: "label", r#for: "display-name", "Display name" }
-                input {
-                    id: "display-name",
-                    name: "display_name",
-                    class: "input",
-                    r#type: "text",
-                    placeholder: "Your display name",
-                    value: "{display_name}",
-                    oninput: move |e| { display_name.set(e.value()); saved.set(false); },
-                }
-            }
-            div { class: "settings-field",
-                label { class: "label", r#for: "bio", "Bio" }
-                textarea {
-                    id: "bio",
-                    name: "bio",
-                    class: "input",
-                    placeholder: "A short bio about you",
-                    value: "{bio}",
-                    oninput: move |e| { bio.set(e.value()); saved.set(false); },
-                }
-            }
-
-            if let Some(err) = error.read().as_ref() {
-                div { class: "settings-error", "{err}" }
-            }
-            if *saved.read() {
-                div { class: "settings-saved", "Profile saved." }
-            }
-
-            button {
-                class: "btn btn-primary btn-sm",
-                disabled: *saving.read(),
-                onclick: on_save,
-                if *saving.read() { "Saving…" } else { "Save profile" }
             }
         }
     }
