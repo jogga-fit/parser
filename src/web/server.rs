@@ -134,7 +134,7 @@ pub async fn run_server(config_path: Option<&Path>) {
     //      limit (typically 10–50 MB) for all inbound traffic.
     let dx_router: axum::Router<()> = Router::new()
         .serve_dioxus_application(
-            ServeConfig::new().enable_out_of_order_streaming(),
+            ServeConfig::new(),
             crate::web::app::App,
         )
         .layer(CompressionLayer::new())
