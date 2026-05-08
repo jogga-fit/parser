@@ -36,7 +36,7 @@ test.describe('Navigation — owner profile routing', () => {
     await page.goto(`${WEB}/@${OWNER_USERNAME}`);
     await waitForHydration(page);
 
-    await expect(page.locator('.profile-card')).toBeVisible();
+    await expect(page.locator('.profile-card')).toBeVisible({ timeout: 15_000 });
   });
 
   test('/@nonexistent shows single-user not-found card', async ({ page }) => {

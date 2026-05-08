@@ -145,6 +145,7 @@ rust   = { unsafe_code = "forbid" }
 clippy = { unwrap_used = "warn", todo = "warn" }
 
 [profile]
+release      = { strip = "debuginfo" }
 release-wasm = { inherits = "release", opt-level = "z", lto = true, codegen-units = 1 }
 wasm-dev     = { inherits = "dev",     opt-level = 1,   lto = true, codegen-units = 1, debug = true }
 server-dev   = { inherits = "dev",                      lto = true, codegen-units = 1, debug = true }
