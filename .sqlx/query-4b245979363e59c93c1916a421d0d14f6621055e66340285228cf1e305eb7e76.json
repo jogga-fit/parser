@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT COUNT(*) AS \"n!: i64\"\n               FROM following f\n               JOIN actors a ON a.id = f.target_id\n               WHERE f.actor_id = ? AND f.accepted = 1 AND a.actor_type != 'Group'",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4b245979363e59c93c1916a421d0d14f6621055e66340285228cf1e305eb7e76"
+}

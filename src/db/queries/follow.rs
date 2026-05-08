@@ -72,11 +72,14 @@ impl FollowQueries {
         Ok(n)
     }
 
-    /// Count accepted following of `actor_id`.
+    /// Count accepted following of `actor_id`, excluding Group (club) actors.
     #[must_use = "Result must be checked"]
     pub async fn count_following(pool: &SqlitePool, actor_id: Uuid) -> Result<i64, DbError> {
         let n = sqlx::query_scalar!(
-            r#"SELECT COUNT(*) AS "n!: i64" FROM following WHERE actor_id = ? AND accepted = 1"#,
+            r#"SELECT COUNT(*) AS "n!: i64"
+               FROM following f
+               JOIN actors a ON a.id = f.target_id
+               WHERE f.actor_id = ? AND f.accepted = 1 AND a.actor_type != 'Group'"#,
             actor_id,
         )
         .fetch_one(pool)

@@ -5,7 +5,8 @@ use crate::web::{
     app::{AppShell, Route},
     components::ErrorBanner,
     hooks::use_auth_guard,
-    server_fns::{follow_actor, list_joined_clubs, unfollow_actor},
+    pages::feed_card::FeedCard,
+    server_fns::{follow_actor, get_club_feed, list_joined_clubs, unfollow_actor},
     sfn_msg, sleep_ms,
     state::AuthSignal,
 };
@@ -163,6 +164,11 @@ fn ClubCard(club: FollowingItem, token: String, on_change: EventHandler<()>) -> 
     } else {
         format!("@{handle}@{domain}")
     };
+    let remote_club_url = if domain.is_empty() {
+        None
+    } else {
+        Some(format!("https://{domain}/clubs/{handle}"))
+    };
 
     let ap_id = club.ap_id.clone();
     let route_handle = format!("{handle}@{domain}");
@@ -178,7 +184,17 @@ fn ClubCard(club: FollowingItem, token: String, on_change: EventHandler<()>) -> 
                         "{display}"
                     }
                     div { class: "club-meta",
-                        span { class: "connection-handle", "{handle_at}" }
+                        if let Some(url) = remote_club_url {
+                            a {
+                                class: "connection-handle",
+                                href: "{url}",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                                "{handle_at}"
+                            }
+                        } else {
+                            span { class: "connection-handle", "{handle_at}" }
+                        }
                         if club.accepted {
                             span { class: "club-badge club-badge-open", "Member" }
                         } else {
@@ -325,7 +341,67 @@ pub fn ClubPage(handle: String) -> Element {
                             token: auth.read().as_ref().map(|u| u.token.clone()).unwrap_or_default(),
                             on_change: move || { nav.push(Route::Clubs {}); },
                         }
+                        ClubFeed {
+                            token: auth.read().as_ref().map(|u| u.token.clone()).unwrap_or_default(),
+                            club: club.clone(),
+                        }
                     },
+                }
+            }
+        }
+    }
+}
+
+#[component]
+fn ClubFeed(token: String, club: FollowingItem) -> Element {
+    let ap_id = club.ap_id.clone();
+    let token_clone = token.clone();
+    let posts = use_resource(move || {
+        let t = token_clone.clone();
+        let id = ap_id.clone();
+        async move { get_club_feed(t, id).await }
+    });
+
+    let remote_url = if !club.domain.is_empty() {
+        // Build a link to the club on its home instance.
+        // Fedisport uses /clubs/<username> routing.
+        Some(format!("https://{}/clubs/{}", club.domain, club.username))
+    } else {
+        None
+    };
+
+    rsx! {
+        div { class: "club-feed",
+            match posts.read().as_ref() {
+                None => rsx! { div { class: "loading-spinner", "Loading posts…" } },
+                Some(Err(e)) => rsx! { ErrorBanner { message: sfn_msg(e) } },
+                Some(Ok(items)) if items.is_empty() => rsx! {
+                    div { class: "empty-state",
+                        p { "No posts received from this club yet." }
+                    }
+                },
+                Some(Ok(items)) => rsx! {
+                    {items.iter().map(|item| rsx! {
+                        FeedCard {
+                            key: "{item.id}",
+                            item: item.clone(),
+                            token: Some(token.clone()),
+                        }
+                    })}
+                },
+            }
+            if let Some(url) = remote_url {
+                if !matches!(posts.read().as_ref(), None) {
+                    p { class: "club-feed-remote-notice",
+                        "Showing only posts received by this server. "
+                        a {
+                            href: "{url}",
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            "View all posts on {club.domain}"
+                            i { class: "ph ph-arrow-square-out", style: "margin-left: 4px; font-size: 0.85em;" }
+                        }
+                    }
                 }
             }
         }
@@ -349,6 +425,11 @@ fn ClubDetailCard(club: FollowingItem, token: String, on_change: EventHandler<()
     } else {
         format!("@{}@{}", club.username, club.domain)
     };
+    let remote_club_url = if club.domain.is_empty() {
+        None
+    } else {
+        Some(format!("https://{}/clubs/{}", club.domain, club.username))
+    };
 
     rsx! {
         div { class: "card profile-card",
@@ -365,7 +446,17 @@ fn ClubDetailCard(club: FollowingItem, token: String, on_change: EventHandler<()
             }
             div { class: "profile-body",
                 h2 { class: "profile-name", "{display}" }
-                p { class: "profile-handle", "{handle_at}" }
+                if let Some(url) = remote_club_url {
+                    a {
+                        class: "profile-handle",
+                        href: "{url}",
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        "{handle_at}"
+                    }
+                } else {
+                    p { class: "profile-handle", "{handle_at}" }
+                }
                 div { class: "profile-stats",
                     if club.accepted {
                         span { class: "club-badge club-badge-open", "Member" }

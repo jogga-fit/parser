@@ -36,6 +36,11 @@ fn main() {
                     };
                     let pool = create_pool(&db_config).await.expect("failed to build pool");
 
+                    sqlx::migrate!()
+                        .run(&pool)
+                        .await
+                        .expect("failed to run migrations");
+
                     let args = SeedOwnerArgs {
                         username: config.owner.username.clone(),
                         email: config.owner.contact.clone(),

@@ -24,6 +24,8 @@
     --font-mono: "Geist Mono", "Fira Mono", monospace;
     --nav-h: 60px; /* bottom nav height on mobile */
     --sidebar-w: 220px;
+    --mobile-header-h: 52px;
+    --radius-full: 9999px;
 }
 
 html[data-theme="light"] {
@@ -363,12 +365,16 @@ textarea {
     min-height: 100vh;
 }
 
+/* dx build debug output can still include Dioxus devtools toasts. They are not
+   product UI and otherwise leak into local QA/mobile screenshots. */
+#__dx-toast {
+    display: none !important;
+}
+
 /* Sidebar hidden on mobile */
 .sidebar {
     display: none;
 }
-
---mobile-header-h: 52px;
 
 .mobile-header {
     position: fixed;
@@ -460,7 +466,7 @@ textarea {
     cursor: pointer;
     border: 2px solid transparent;
     transition: border-color 0.15s, opacity 0.12s;
-    font-family: var(--font-sans);
+    font-family: var(--font);
 }
 
 .mobile-header-avatar:hover {
@@ -3730,7 +3736,7 @@ button.profile-stat:hover .profile-stat-count {
     border-radius: 0;
     margin: 0;
 }
-.carousel-overlay .leaflet-control-container {
+.carousel-overlay .leaflet-control-zoom {
     display: none;
 }
 .carousel-overlay .elevation-sparkline {
@@ -4210,10 +4216,63 @@ button.profile-stat:hover .profile-stat-count {
 
 .reply-item {
     margin-bottom: 0.5rem;
+    margin-left: 1.25rem;
+    border-left: 2px solid var(--border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.85rem 1rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
 .reply-item .feed-card-header {
     margin-bottom: 0.5rem;
+    flex-wrap: nowrap;
+}
+
+.reply-item .feed-avatar-wrap {
+    gap: 0.4rem;
+}
+
+.reply-item .avatar-circle,
+.reply-item .avatar-img {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.reply-item .feed-username {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.reply-item .feed-content {
+    margin: 0.35rem 0 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text);
+}
+
+.reply-item .feed-content p {
+    margin: 0;
+}
+
+.reply-item .feed-card-actions {
+    padding-top: 0.25rem;
+    gap: 0.5rem;
+}
+
+.reply-item .like-btn {
+    font-size: 0.82rem;
+    padding: 0.15rem 0.4rem;
+}
+
+.reply-item .post-time {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
 }
 
 
@@ -4445,6 +4504,36 @@ button.profile-stat:hover .profile-stat-count {
     margin: 0.6rem 0 0.35rem;
 }
 
+.member-identity,
+.member-identity-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    margin: -6px -8px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+}
+
+.member-identity-link {
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.member-identity-link:hover {
+    background: rgba(255, 107, 43, 0.07);
+}
+
+.member-identity-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
 .club-member-row {
     display: flex;
     align-items: center;
@@ -4501,6 +4590,30 @@ button.profile-stat:hover .profile-stat-count {
     max-width: 480px;
 }
 
+
+.club-feed {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.club-feed-remote-notice {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+}
+
+.club-feed-remote-notice a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.club-feed-remote-notice a:hover {
+    text-decoration: underline;
+}
 
 .create-club-modal {
     max-width: 460px;

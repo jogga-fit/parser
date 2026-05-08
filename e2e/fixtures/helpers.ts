@@ -1,6 +1,33 @@
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test';
 
 const DEFAULT_BASE = process.env.BASE_URL ?? 'http://localhost:6060';
+const OWNER_EMAIL = process.env.OWNER_EMAIL ?? 'owner@jogga.test';
+const OWNER_PASSWORD = process.env.OWNER_PASSWORD ?? 'testpass99';
+
+/**
+ * Returns a suffix unique across concurrent workers and quick re-runs.
+ * Combines a millisecond timestamp with 5 random base-36 chars.
+ */
+export function uniqueSuffix(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/**
+ * Jogga is a single-owner server — "create user" returns the owner's credentials.
+ * Username/email params are accepted for API compatibility with fedisport helpers
+ * but the owner credentials from env vars are always used.
+ *
+ * Requires INTEGRATION_TEST=true and a running server with a seeded owner account.
+ */
+export async function createUser(
+  request: APIRequestContext,
+  _username: string,
+  _email: string,
+  _password = 'testpass99',
+  baseUrl = DEFAULT_BASE,
+): Promise<{ token: string; ap_id: string; username: string }> {
+  return getOwnerProfile(request, OWNER_EMAIL, OWNER_PASSWORD, baseUrl);
+}
 
 export function sleep(ms: number): Promise<void> {
   return new Promise(r => setTimeout(r, ms));

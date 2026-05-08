@@ -405,19 +405,20 @@ pub fn AppShell(children: Element) -> Element {
                     span { class: "brand-name", "Jogga:" }
                 }
 
+                Link { class: "nav-item", active_class: "active", to: Route::Home {},
+                    i { class: "ph ph-house nav-icon" }
+                    span { class: "nav-label", "Feed" }
+                }
+                Link { class: "nav-item", active_class: "active", to: Route::People {},
+                    i { class: "ph ph-users nav-icon" }
+                    span { class: "nav-label", "People" }
+                }
+                Link { class: "nav-item", active_class: "active", to: Route::Clubs {},
+                    i { class: "ph ph-users-three nav-icon" }
+                    span { class: "nav-label", "Clubs" }
+                }
+
                 if is_authed {
-                    Link { class: "nav-item", active_class: "active", to: Route::Home {},
-                        i { class: "ph ph-house nav-icon" }
-                        span { class: "nav-label", "Feed" }
-                    }
-                    Link { class: "nav-item", active_class: "active", to: Route::People {},
-                        i { class: "ph ph-users nav-icon" }
-                        span { class: "nav-label", "People" }
-                    }
-                    Link { class: "nav-item", active_class: "active", to: Route::Clubs {},
-                        i { class: "ph ph-users-three nav-icon" }
-                        span { class: "nav-label", "Clubs" }
-                    }
                     Link { class: "nav-item", active_class: "active", to: Route::UserProfile { username: format!("@{username}") },
                         i { class: "ph ph-user nav-icon" }
                         span { class: "nav-label", "Profile" }
@@ -567,22 +568,18 @@ pub fn AppShell(children: Element) -> Element {
                 }
             }
 
-            // Uses buttons (not Link) so these don't emit <a href> tags that
-            // would duplicate the sidebar links and break Playwright strict-mode.
-            if is_authed {
-                nav { class: "bottom-nav",
-                    button { class: "bottom-nav-item", onclick: move |_| { let _ = nav.push(Route::Home {}); },
-                        i { class: "ph ph-house nav-icon" }
-                        span { class: "nav-label", "Feed" }
-                    }
-                    button { class: "bottom-nav-item", onclick: move |_| { let _ = nav.push(Route::People {}); },
-                        i { class: "ph ph-users nav-icon" }
-                        span { class: "nav-label", "People" }
-                    }
-                    button { class: "bottom-nav-item", onclick: move |_| { let _ = nav.push(Route::Clubs {}); },
-                        i { class: "ph ph-users-three nav-icon" }
-                        span { class: "nav-label", "Clubs" }
-                    }
+            nav { class: "bottom-nav",
+                Link { class: "bottom-nav-item", active_class: "active", to: Route::Home {},
+                    i { class: "ph ph-house nav-icon" }
+                    span { class: "nav-label", "Feed" }
+                }
+                Link { class: "bottom-nav-item", active_class: "active", to: Route::People {},
+                    i { class: "ph ph-users nav-icon" }
+                    span { class: "nav-label", "People" }
+                }
+                Link { class: "bottom-nav-item", active_class: "active", to: Route::Clubs {},
+                    i { class: "ph ph-users-three nav-icon" }
+                    span { class: "nav-label", "Clubs" }
                 }
             }
         }

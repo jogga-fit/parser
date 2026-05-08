@@ -1,0 +1,16 @@
+[server]
+host = "127.0.0.1"
+port = 6060
+
+[database]
+url = "sqlite:jogga-dev.db?mode=rwc"
+max_connections = 5
+
+[instance]
+domain = "localhost:6060"
+name = "jogga-dev"
+description = "Jogga local dev instance"
+
+[owner]
+contact = "owner@jogga.test"
+username = "owner"

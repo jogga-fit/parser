@@ -376,6 +376,42 @@ impl ActivityQueries {
         .map_err(DbError::Sqlx)
     }
 
+    /// Fetch activities from a club actor (by AP ID) — used for the club detail feed.
+    ///
+    /// Returns Create and Announce activities where the club is the actor, newest first.
+    #[must_use = "Result must be checked"]
+    pub async fn get_club_feed(
+        pool: &SqlitePool,
+        club_ap_id: &str,
+        limit: i64,
+    ) -> Result<Vec<FeedRow>, DbError> {
+        sqlx::query_as::<_, FeedRow>(
+            r#"SELECT DISTINCT
+                   a.ap_id              AS activity_ap_id,
+                   a.activity_type,
+                   act.username         AS actor_username,
+                   act.domain           AS actor_domain,
+                   act.is_local         AS actor_is_local,
+                   act.ap_id            AS actor_ap_id,
+                   act.avatar_url       AS actor_avatar_url,
+                   a.ap_json            AS ap_json,
+                   a.published          AS published
+               FROM activities a
+               JOIN actors     act ON act.id = a.actor_id
+               LEFT JOIN objects o ON o.ap_id = a.object_ap_id
+               WHERE act.ap_id = ?
+                 AND a.activity_type IN ('Create', 'Announce')
+                 AND (o.id IS NULL OR o.visibility != 'private')
+               ORDER BY a.published DESC
+               LIMIT ?"#,
+        )
+        .bind(club_ap_id)
+        .bind(limit)
+        .fetch_all(pool)
+        .await
+        .map_err(DbError::Sqlx)
+    }
+
     /// Fetch public Create activities from local actors — used for the logged-out feed.
     #[must_use = "Result must be checked"]
     pub async fn get_local_public_timeline(

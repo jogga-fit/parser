@@ -638,6 +638,42 @@ pub async fn get_public_feed() -> Result<Vec<FeedItem>, ServerFnError> {
 }
 
 #[server]
+pub async fn get_club_feed(
+    token: String,
+    club_ap_id: String,
+) -> Result<Vec<FeedItem>, ServerFnError> {
+    use crate::web::server::*;
+    let _rd = request_data();
+    let state = _rd.app_data();
+    AccountQueries::find_by_token(&state.db, &token)
+        .await
+        .map_err(|_| ServerFnError::new("invalid token"))?;
+
+    let activities = ActivityQueries::get_club_feed(&state.db, &club_ap_id, 30)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    let mut items: Vec<FeedItem> = activities
+        .into_iter()
+        .map(|a| feed_row_to_item(a, None))
+        .collect();
+
+    let object_ap_ids: Vec<String> = items.iter().map(|i| i.object_ap_id.clone()).collect();
+    let like_counts = LikeQueries::count_batch(&state.db, &object_ap_ids)
+        .await
+        .unwrap_or_default();
+    for item in &mut items {
+        item.like_count = like_counts.get(&item.object_ap_id).copied().unwrap_or(0);
+    }
+
+    enrich_exercise_stats(&state.db, &mut items)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    Ok(items)
+}
+
+#[server]
 pub async fn get_directory() -> Result<Vec<DirectoryItem>, ServerFnError> {
     use crate::web::server::*;
     let _rd = request_data();
