@@ -43,6 +43,7 @@ pub fn RegisterPage() -> Element {
         spawn(async move {
             match register_init(u, email, phone).await {
                 Ok(r) => {
+                    #[allow(unused_mut)]
                     let mut code_param = r.otp_id.clone();
                     #[cfg(debug_assertions)]
                     if let Some(c) = &r.code {

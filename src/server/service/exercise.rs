@@ -15,8 +15,7 @@ use crate::db::queries::{
 };
 use crate::server::{
     error::{AppError, InternalError},
-    impls::actor::DbActor,
-    protocol::{context::FEDISPORT_CONTEXT, update::Update},
+protocol::{context::FEDISPORT_CONTEXT, update::Update},
     state::AppState,
 };
 

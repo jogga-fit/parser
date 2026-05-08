@@ -3,7 +3,7 @@ use activitypub_federation::{
 };
 use axum::{
     extract::Path,
-    http::{HeaderMap, StatusCode},
+    http::HeaderMap,
     response::{IntoResponse, Redirect},
 };
 

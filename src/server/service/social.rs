@@ -5,7 +5,7 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::db::queries::{
-    AccountQueries, ActivityQueries, ActorQueries, DeliveryQueries, FollowQueries,
+    ActivityQueries, ActorQueries, DeliveryQueries, FollowQueries,
     NotificationQueries, activity::NewActivity,
 };
 use crate::server::{
@@ -15,13 +15,20 @@ use crate::server::{
     state::AppState,
 };
 
-use super::helpers::{actor_inbox_url, fetch_local_actor};
+use super::helpers::fetch_local_actor;
 
 /// Returns `true` for RFC-1918, loopback, link-local, CGNAT, and well-known
 /// internal hostnames. Used to prevent SSRF via WebFinger lookups.
+///
+/// In debug builds `localhost` with a port (e.g. `localhost:8080`) is allowed
+/// so that multi-instance federation tests can run against local servers.
+/// In release builds all `localhost` variants — with or without a port — are
+/// blocked, stripping the port before the hostname check.
 fn is_private_host(host: &str) -> bool {
     use std::net::IpAddr;
-    if let Ok(ip) = host.parse::<IpAddr>() {
+    // Strip port so "127.0.0.1:8080" and "localhost:8080" are handled correctly.
+    let bare = host.split(':').next().unwrap_or(host);
+    if let Ok(ip) = bare.parse::<IpAddr>() {
         return ip.is_loopback()
             || ip.is_unspecified()
             || match ip {
@@ -34,7 +41,12 @@ fn is_private_host(host: &str) -> bool {
                 IpAddr::V6(v6) => v6.is_loopback() || v6.is_unspecified(),
             };
     }
-    let lower = host.to_ascii_lowercase();
+    let lower = bare.to_ascii_lowercase();
+    // In debug builds, allow localhost:port for local multi-instance federation tests.
+    #[cfg(debug_assertions)]
+    if lower == "localhost" {
+        return false;
+    }
     lower == "localhost"
         || lower.ends_with(".local")
         || lower.ends_with(".internal")
@@ -68,8 +80,14 @@ pub async fn resolve_handle(state: &AppState, handle: &str) -> Result<String, Ap
     }
 
     // Build the WebFinger resource URL.
+    // Debug builds allow HTTP for localhost targets so local multi-instance tests work.
+    // Release builds always use HTTPS — plain-HTTP federation is not permitted in production.
+    #[cfg(debug_assertions)]
+    let wf_scheme = if domain.starts_with("localhost") { "http" } else { "https" };
+    #[cfg(not(debug_assertions))]
+    let wf_scheme = "https";
     let webfinger_url = format!(
-        "https://{domain}/.well-known/webfinger?resource=acct:{user}@{domain}"
+        "{wf_scheme}://{domain}/.well-known/webfinger?resource=acct:{user}@{domain}"
     );
 
     let resp = state

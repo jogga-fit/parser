@@ -265,7 +265,7 @@ fn Settings() -> Element {
 #[component]
 fn NoteDetail(username: String, note_id: String) -> Element {
     // Only handle /@username paths.
-    if let Some(u) = username.strip_prefix('@') {
+    if username.strip_prefix('@').is_some() {
         rsx! { PostDetailPage { object_ap_id: note_id } }
     } else {
         rsx! {
