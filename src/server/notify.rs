@@ -69,12 +69,9 @@ impl SmtpNotifier {
         code: &str,
         magic_link: Option<&str>,
     ) -> Result<(), NotifyError> {
-        let (subject, action) = match purpose {
-            "password_reset" => (
-                "Your jogga password reset code",
-                "reset your jogga password",
-            ),
-            _ => ("Your jogga verification code", "verify your jogga account"),
+        let subject = match purpose {
+            "password_reset" => "Your jogga password reset code",
+            _ => "Your jogga verification code",
         };
 
         let recipient = to
@@ -82,10 +79,10 @@ impl SmtpNotifier {
             .map_err(|e| NotifyError::Email(format!("invalid recipient address: {e}")))?;
         let body = if let Some(url) = magic_link {
             format!(
-                "Your link to {action}:\n\n{url}\n\nOr enter the code manually: {code}\n\nThis link expires in 15 minutes."
+                "Here is the OTP you requested: {code}\n\nClick this link to continue: {url}\n\nDo not share this with anyone. This code will expire in 15 minutes."
             )
         } else {
-            format!("Your code to {action} is {code}.\n\nThis code expires in 15 minutes.")
+            format!("Here is the OTP you requested: {code}\n\nDo not share this with anyone. This code will expire in 15 minutes.")
         };
         let message = Message::builder()
             .from(self.from.clone())
@@ -119,22 +116,8 @@ impl SmsNotifier {
         }
     }
 
-    async fn send(
-        &self,
-        to: &str,
-        purpose: &str,
-        code: &str,
-        magic_link: Option<&str>,
-    ) -> Result<(), NotifyError> {
-        let verb = match purpose {
-            "password_reset" => "reset your password on",
-            _ => "verify your account on",
-        };
-        let body = if let Some(url) = magic_link {
-            format!("Tap to {verb} jogga: {url}  (expires in 15 min)")
-        } else {
-            format!("Your code to {verb} jogga: {code}  (expires in 15 min)")
-        };
+    async fn send(&self, to: &str, code: &str) -> Result<(), NotifyError> {
+        let body = format!("Your jogga code: {code}. Expires in 15 min. Do not share.");
 
         let url = format!(
             "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json",
@@ -206,7 +189,7 @@ impl AppNotifier {
                     .as_ref()
                     .ok_or(NotifyError::Unconfigured("phone"))?;
                 debug!(purpose, "sending OTP SMS");
-                match notifier.send(contact, purpose, code, magic_link).await {
+                match notifier.send(contact, code).await {
                     Ok(()) => {
                         info!(purpose, "OTP SMS sent successfully");
                         Ok(())
