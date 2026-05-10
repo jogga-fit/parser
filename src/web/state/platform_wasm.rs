@@ -12,7 +12,7 @@ const THEME_KEY: &str = "fedisport_theme";
 /// been granted capabilities (capabilities/default.json → remote.urls).
 pub fn is_tauri() -> bool {
     window()
-        .and_then(|w| Reflect::get(&w, &JsValue::from_str("__TAURI__")).ok())
+        .and_then(|w| Reflect::get(&w, &JsValue::from_str("__TAURI_INTERNALS__")).ok())
         .map(|v| !v.is_undefined())
         .unwrap_or(false)
 }

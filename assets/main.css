@@ -254,11 +254,11 @@ textarea {
 }
 
 .auth-page {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
 }
 
 .auth-card {
