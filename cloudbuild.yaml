@@ -1,20 +1,19 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    env:
-      - DOCKER_BUILDKIT=1
+    args: [buildx, create, --use, --name, builder, --driver, docker-container]
+
+  - name: gcr.io/cloud-builders/docker
     args:
+      - buildx
       - build
-      - --progress=plain
-      - --build-arg
-      - BUILDKIT_INLINE_CACHE=1
       - --cache-from
-      - us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/jogga:latest
+      - type=registry,ref=us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/cache
+      - --cache-to
+      - type=registry,ref=us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/cache,mode=max
+      - --push
       - -t
       - us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/jogga:latest
       - .
-
-images:
-  - us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/jogga:latest
 
 options:
   machineType: E2_HIGHCPU_8
