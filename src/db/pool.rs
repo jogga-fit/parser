@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use sqlx::SqlitePool;
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
 use crate::db::error::DbError;
 
@@ -46,7 +46,13 @@ pub async fn create_pool(config: &DbConfig) -> Result<SqlitePool, DbError> {
                 Ok(())
             })
         })
-        .connect(&config.url)
+        .connect_with(
+            config
+                .url
+                .parse::<SqliteConnectOptions>()
+                .map_err(|e| DbError::Sqlx(sqlx::Error::Configuration(e.into())))?
+                .create_if_missing(true),
+        )
         .await?;
     Ok(pool)
 }
