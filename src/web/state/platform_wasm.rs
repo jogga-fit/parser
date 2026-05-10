@@ -1,5 +1,3 @@
-use js_sys::Reflect;
-use wasm_bindgen::JsValue;
 use web_sys::window;
 
 use super::AuthUser;
@@ -11,10 +9,26 @@ const THEME_KEY: &str = "fedisport_theme";
 /// Checks for `window.__TAURI__` which Tauri injects into pages that have
 /// been granted capabilities (capabilities/default.json → remote.urls).
 pub fn is_tauri() -> bool {
-    window()
-        .and_then(|w| Reflect::get(&w, &JsValue::from_str("__TAURI_INTERNALS__")).ok())
-        .map(|v| !v.is_undefined())
-        .unwrap_or(false)
+    let win = match window() {
+        Some(w) => w,
+        None => return false,
+    };
+    if let Ok(Some(storage)) = win.session_storage() {
+        if storage.get_item("__tauri__").ok().flatten().as_deref() == Some("1") {
+            return true;
+        }
+        let in_tauri = win.location().search().ok()
+            .map(|s| s.contains("__tauri=1"))
+            .unwrap_or(false);
+        if in_tauri {
+            let _ = storage.set_item("__tauri__", "1");
+        }
+        in_tauri
+    } else {
+        win.location().search().ok()
+            .map(|s| s.contains("__tauri=1"))
+            .unwrap_or(false)
+    }
 }
 
 pub fn load_auth() -> Option<AuthUser> {
