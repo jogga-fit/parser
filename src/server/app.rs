@@ -14,7 +14,8 @@ use tower_http::{
 
 use crate::server::{
     routes::{
-        actor, api, exercise, followers, following, inbox, nodeinfo, note, outbox, webfinger,
+        actor, api, exercise, followers, following, health, inbox, nodeinfo, note, outbox,
+        webfinger,
     },
     state::AppState,
 };
@@ -67,6 +68,8 @@ pub async fn build_router(
             "/api/exercises/{id}/stats",
             get(exercise::get_exercise_stats),
         )
+        // Health check — used by mobile app when adding a server
+        .route("/api/health", get(health::health))
         // Write API — authentication
         .route("/api/v1/accounts/token", post(api::token))
         .route(

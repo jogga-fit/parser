@@ -11,3 +11,6 @@ e2e/test-results/
 *.db-shm
 *.db-wal
 *.db
+# Deploy secrets (copy from .example and fill in)
+deploy/.env.testing
+deploy/.env.single

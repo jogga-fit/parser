@@ -1,30 +1,20 @@
+use js_sys::Reflect;
+use wasm_bindgen::JsValue;
 use web_sys::window;
 
 use super::AuthUser;
 
 const STORAGE_KEY: &str = "fedisport_auth";
 const THEME_KEY: &str = "fedisport_theme";
-const INSTANCE_KEY: &str = "jogga_instance";
-pub const DEFAULT_INSTANCE: &str = "https://app.jogga.fit";
 
+/// True when running inside a Tauri webview.
+/// Checks for `window.__TAURI__` which Tauri injects into pages that have
+/// been granted capabilities (capabilities/default.json → remote.urls).
 pub fn is_tauri() -> bool {
     window()
-        .and_then(|w| w.location().hostname().ok())
-        .map(|h| h == "tauri.localhost")
+        .and_then(|w| Reflect::get(&w, &JsValue::from_str("__TAURI__")).ok())
+        .map(|v| !v.is_undefined())
         .unwrap_or(false)
-}
-
-pub fn load_instance_url() -> String {
-    window()
-        .and_then(|w| w.local_storage().ok().flatten())
-        .and_then(|s| s.get_item(INSTANCE_KEY).ok().flatten())
-        .unwrap_or_else(|| DEFAULT_INSTANCE.to_string())
-}
-
-pub fn save_instance_url(url: &str) {
-    if let Some(storage) = window().and_then(|w| w.local_storage().ok()).flatten() {
-        let _ = storage.set_item(INSTANCE_KEY, url);
-    }
 }
 
 pub fn load_auth() -> Option<AuthUser> {
@@ -55,7 +45,7 @@ pub fn load_theme() -> String {
         .unwrap_or_else(|| "system".to_string())
 }
 
-/// Resolve "system" to "dark" (default server-side fallback); "light"/"dark" pass through.
+/// Resolve "system" to "dark" (server-side fallback); "light"/"dark" pass through.
 /// Actual system resolution happens in JS via prefers-color-scheme in app.rs.
 pub fn resolve_theme(pref: &str) -> String {
     if pref == "system" {

@@ -1,0 +1,7 @@
+testing.jogga.fit {
+    reverse_proxy fedisport:8080
+}
+
+single.jogga.fit {
+    reverse_proxy jogga:80
+}

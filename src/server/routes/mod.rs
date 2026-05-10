@@ -3,6 +3,7 @@ pub mod api;
 pub mod exercise;
 pub mod followers;
 pub mod following;
+pub mod health;
 pub mod helpers;
 pub mod inbox;
 pub mod nodeinfo;

@@ -30,4 +30,4 @@ mod platform;
 pub use platform::{clear_auth, load_auth, load_theme, resolve_theme, save_auth, save_theme};
 
 #[cfg(target_arch = "wasm32")]
-pub use platform::{DEFAULT_INSTANCE, is_tauri, load_instance_url, save_instance_url};
+pub use platform::is_tauri;
