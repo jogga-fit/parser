@@ -24,13 +24,12 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # single.jogga.fit — single-user jogga (core) instance
+  # single.jogga.fit — single-user jogga (core) instance (SQLite, no postgres dep)
   jogga:
     image: us-central1-docker.pkg.dev/project-ce74a06d-c017-4712-8f0/jogga/jogga:latest
     env_file: .env.single
-    depends_on:
-      postgres:
-        condition: service_healthy
+    volumes:
+      - jogga_data:/data
     restart: unless-stopped
 
   postgres:
@@ -69,3 +68,4 @@ volumes:
   minio_data:
   caddy_data:
   caddy_config:
+  jogga_data:
