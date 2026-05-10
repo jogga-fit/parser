@@ -836,7 +836,12 @@ async fn follow_with_options(
             .map(str::to_owned)
             .ok_or_else(|| ServerFnError::new("WebFinger: no ActivityPub self link found"))?
     } else {
-        handle_or_url
+        let h = handle_or_url;
+        if h.starts_with("http://") || h.starts_with("https://") {
+            h
+        } else {
+            format!("https://{h}")
+        }
     };
 
     let data = request_data();
